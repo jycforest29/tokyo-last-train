@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tokyo Last Train API Documentation</title>
+<style>
+  :root {
+    --bg: #0f1923;
+    --bg-card: #162032;
+    --bg-code: #0d1520;
+    --text: #e8eaed;
+    --text-dim: #8b95a5;
+    --accent: #00b4d8;
+    --accent-red: #e94560;
+    --border: #253347;
+    --green: #4ade80;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem 1rem 4rem;
+  }
+  .container { max-width: 800px; margin: 0 auto; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.25rem; }
+  .subtitle { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 2.5rem; }
+  h2 {
+    font-size: 1.3rem;
+    margin: 2.5rem 0 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+
+  .endpoint {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .method-url {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .method {
+    background: rgba(0, 180, 216, 0.15);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 5px;
+    letter-spacing: 0.05em;
+  }
+  .url {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.9rem;
+    color: var(--text);
+    word-break: break-all;
+  }
+  .desc { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin: 0.75rem 0;
+  }
+  th {
+    text-align: left;
+    color: var(--text-dim);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid rgba(37, 51, 71, 0.5);
+    vertical-align: top;
+  }
+  td code {
+    background: var(--bg-code);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: var(--accent);
+  }
+  .required {
+    color: var(--accent-red);
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
+  pre {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    margin: 0.75rem 0;
+  }
+  pre code { background: none; padding: 0; color: var(--text); }
+  .str { color: #4ade80; }
+  .num { color: #f59e0b; }
+  .key { color: var(--accent); }
+  .null { color: var(--text-dim); }
+
+  .note {
+    background: rgba(0, 180, 216, 0.08);
+    border-left: 3px solid var(--accent);
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+    border-radius: 0 8px 8px 0;
+    color: var(--text-dim);
+  }
+  .note strong { color: var(--text); }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .badge-string { background: rgba(74, 222, 128, 0.15); color: var(--green); }
+  .badge-number { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+  .badge-array { background: rgba(139, 118, 208, 0.15); color: #8b76d0; }
+  .badge-object { background: rgba(233, 69, 96, 0.15); color: var(--accent-red); }
+
+  .toc { margin: 1.5rem 0; }
+  .toc a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: block;
+    padding: 0.25rem 0;
+  }
+  .toc a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    body { padding: 1rem 0.75rem 3rem; }
+    .endpoint { padding: 1rem; }
+    pre { font-size: 0.75rem; padding: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Tokyo Last Train API</h1>
+<p class="subtitle">東京終電検索 API ドキュメント &mdash; Base URL: <code>http://localhost:8080</code></p>
+
+<div class="toc">
+  <a href="#station-search">1. Station Search / 駅検索</a>
+  <a href="#last-train">2. Last Train Route / 終電経路検索</a>
+</div>
+
+<!-- ==================== Station Search ==================== -->
+<h2 id="station-search">1. Station Search / 駅検索</h2>
+
+<div class="endpoint">
+  <div class="method-url">
+    <span class="method">GET</span>
+    <span class="url">/api/v1/stations/search</span>
+  </div>
+  <p class="desc">
+    Search stations by name. Supports English and Japanese queries with partial matching.
+    <br>駅名で検索します。英語・日本語の部分一致に対応。最大20件を返します。
+  </p>
+
+  <h3>Request Parameters</h3>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>query</code></td>
+        <td><span class="badge badge-string">string</span></td>
+        <td><span class="required">required</span></td>
+        <td>Station name query (e.g., <code>shibuya</code>, <code>渋谷</code>)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Example Request</h3>
+  <pre><code>GET /api/v1/stations/search?query=shibuya</code></pre>
+
+  <h3>Response</h3>
+  <pre><code>{
+  <span class="key">"stations"</span>: [
+    {
+      <span class="key">"stationId"</span>: <span class="str">"odpt.Station:TokyoMetro.Ginza.Shibuya"</span>,
+      <span class="key">"nameJa"</span>: <span class="str">"渋谷"</span>,
+      <span class="key">"nameEn"</span>: <span class="str">"Shibuya"</span>,
+      <span class="key">"railway"</span>: <span class="str">"odpt.Railway:TokyoMetro.Ginza"</span>,
+      <span class="key">"railwayNameJa"</span>: <span class="str">"銀座線"</span>,
+      <span class="key">"railwayNameEn"</span>: <span class="str">"Ginza Line"</span>,
+      <span class="key">"operator"</span>: <span class="str">"odpt.Operator:TokyoMetro"</span>,
+      <span class="key">"latitude"</span>: <span class="num">35.6580</span>,
+      <span class="key">"longitude"</span>: <span class="num">139.7016</span>
+    }
+  ]
+}</code></pre>
+
+  <h3>Response Fields</h3>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>stations</code></td><td><span class="badge badge-array">array</span></td><td>List of matching stations (max 20)</td></tr>
+      <tr><td><code>stations[].stationId</code></td><td><span class="badge badge-string">string</span></td><td>Unique ODPT station identifier. Use this for the last-train query.</td></tr>
+      <tr><td><code>stations[].nameJa</code></td><td><span class="badge badge-string">string</span></td><td>Station name in Japanese</td></tr>
+      <tr><td><code>stations[].nameEn</code></td><td><span class="badge badge-string">string</span></td><td>Station name in English</td></tr>
+      <tr><td><code>stations[].railway</code></td><td><span class="badge badge-string">string</span></td><td>ODPT railway identifier</td></tr>
+      <tr><td><code>stations[].railwayNameJa</code></td><td><span class="badge badge-string">string</span></td><td>Railway/line name in Japanese</td></tr>
+      <tr><td><code>stations[].railwayNameEn</code></td><td><span class="badge badge-string">string</span></td><td>Railway/line name in English</td></tr>
+      <tr><td><code>stations[].operator</code></td><td><span class="badge badge-string">string</span></td><td>ODPT operator identifier</td></tr>
+      <tr><td><code>stations[].latitude</code></td><td><span class="badge badge-number">number</span></td><td>Geographic latitude</td></tr>
+      <tr><td><code>stations[].longitude</code></td><td><span class="badge badge-number">number</span></td><td>Geographic longitude</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ==================== Last Train ==================== -->
+<h2 id="last-train">2. Last Train Route / 終電経路検索</h2>
+
+<div class="endpoint">
+  <div class="method-url">
+    <span class="method">GET</span>
+    <span class="url">/api/v1/last-train</span>
+  </div>
+  <p class="desc">
+    Find the last available train routes between two stations. Results are filtered to departures after the current time. Uses the RAPTOR algorithm for optimal pathfinding with up to 3 transfers.
+    <br>2つの駅間の終電を検索します。現在時刻以降の出発のみ表示。最大3回乗換まで対応。
+  </p>
+
+  <h3>Request Parameters</h3>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>from</code></td>
+        <td><span class="badge badge-string">string</span></td>
+        <td><span class="required">required</span></td>
+        <td>Departure station ID (e.g., <code>odpt.Station:TokyoMetro.Ginza.Shibuya</code>)</td>
+      </tr>
+      <tr>
+        <td><code>to</code></td>
+        <td><span class="badge badge-string">string</span></td>
+        <td><span class="required">required</span></td>
+        <td>Arrival station ID</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Example Request</h3>
+  <pre><code>GET /api/v1/last-train?from=odpt.Station:TokyoMetro.Ginza.Shibuya&amp;to=odpt.Station:JR-East.Yamanote.Tokyo</code></pre>
+
+  <h3>Response</h3>
+  <pre><code>{
+  <span class="key">"fromStation"</span>: <span class="str">"odpt.Station:TokyoMetro.Ginza.Shibuya"</span>,
+  <span class="key">"toStation"</span>: <span class="str">"odpt.Station:JR-East.Yamanote.Tokyo"</span>,
+  <span class="key">"calendarType"</span>: <span class="str">"Weekday"</span>,
+  <span class="key">"routes"</span>: [
+    {
+      <span class="key">"departureTime"</span>: <span class="str">"23:45"</span>,
+      <span class="key">"arrivalTime"</span>: <span class="str">"0:12"</span>,
+      <span class="key">"railway"</span>: <span class="str">"odpt.Railway:TokyoMetro.Ginza"</span>,
+      <span class="key">"railwayNameJa"</span>: <span class="str">"銀座線"</span>,
+      <span class="key">"railwayNameEn"</span>: <span class="str">"Ginza Line"</span>,
+      <span class="key">"railDirection"</span>: <span class="str">"odpt.RailDirection:TokyoMetro.Asakusa"</span>,
+      <span class="key">"trainType"</span>: <span class="str">"Local"</span>,
+      <span class="key">"destinationNameJa"</span>: <span class="str">"浅草"</span>,
+      <span class="key">"destinationNameEn"</span>: <span class="str">"Asakusa"</span>,
+      <span class="key">"transfers"</span>: [
+        {
+          <span class="key">"stationNameJa"</span>: <span class="str">"赤坂見附"</span>,
+          <span class="key">"stationNameEn"</span>: <span class="str">"Akasaka-Mitsuke"</span>,
+          <span class="key">"fromRailway"</span>: <span class="str">"odpt.Railway:TokyoMetro.Ginza"</span>,
+          <span class="key">"toRailway"</span>: <span class="str">"odpt.Railway:TokyoMetro.Marunouchi"</span>,
+          <span class="key">"departureTime"</span>: <span class="str">"23:50"</span>
+        }
+      ],
+      <span class="key">"totalFare"</span>: <span class="num">320</span>
+    }
+  ]
+}</code></pre>
+
+  <h3>Response Fields</h3>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>fromStation</code></td><td><span class="badge badge-string">string</span></td><td>Departure station ID (echoed)</td></tr>
+      <tr><td><code>toStation</code></td><td><span class="badge badge-string">string</span></td><td>Arrival station ID (echoed)</td></tr>
+      <tr><td><code>calendarType</code></td><td><span class="badge badge-string">string</span></td><td><code>Weekday</code>, <code>Saturday</code>, or <code>Holiday</code></td></tr>
+      <tr><td><code>routes</code></td><td><span class="badge badge-array">array</span></td><td>Available last train routes, sorted by latest departure first</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Route Object</h3>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>departureTime</code></td><td><span class="badge badge-string">string</span></td><td>Departure time in <code>HH:MM</code> format (24h). Times after midnight shown as <code>0:XX</code></td></tr>
+      <tr><td><code>arrivalTime</code></td><td><span class="badge badge-string">string</span></td><td>Arrival time in <code>HH:MM</code> format</td></tr>
+      <tr><td><code>railway</code></td><td><span class="badge badge-string">string</span></td><td>First segment's railway ID</td></tr>
+      <tr><td><code>railwayNameJa</code></td><td><span class="badge badge-string">string</span></td><td>Railway name in Japanese</td></tr>
+      <tr><td><code>railwayNameEn</code></td><td><span class="badge badge-string">string</span></td><td>Railway name in English</td></tr>
+      <tr><td><code>railDirection</code></td><td><span class="badge badge-string">string</span></td><td>Rail direction identifier (nullable)</td></tr>
+      <tr><td><code>trainType</code></td><td><span class="badge badge-string">string</span></td><td>Train type: Local, Rapid, Express, etc. (nullable)</td></tr>
+      <tr><td><code>destinationNameJa</code></td><td><span class="badge badge-string">string</span></td><td>Final destination in Japanese (nullable)</td></tr>
+      <tr><td><code>destinationNameEn</code></td><td><span class="badge badge-string">string</span></td><td>Final destination in English (nullable)</td></tr>
+      <tr><td><code>transfers</code></td><td><span class="badge badge-array">array</span></td><td>Transfer details. Empty array if direct route</td></tr>
+      <tr><td><code>totalFare</code></td><td><span class="badge badge-number">number</span></td><td>Total fare in JPY (IC card price). <code>0</code> if fare data unavailable</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Transfer Object</h3>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>stationNameJa</code></td><td><span class="badge badge-string">string</span></td><td>Transfer station name in Japanese</td></tr>
+      <tr><td><code>stationNameEn</code></td><td><span class="badge badge-string">string</span></td><td>Transfer station name in English</td></tr>
+      <tr><td><code>fromRailway</code></td><td><span class="badge badge-string">string</span></td><td>Railway ID before transfer</td></tr>
+      <tr><td><code>toRailway</code></td><td><span class="badge badge-string">string</span></td><td>Railway ID after transfer</td></tr>
+      <tr><td><code>departureTime</code></td><td><span class="badge badge-string">string</span></td><td>Departure time from transfer station</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>Note:</strong> The <code>calendarType</code> is automatically determined by the server based on the current date in the <code>Asia/Tokyo</code> timezone. Specific holidays registered in the ODPT calendar data take priority over day-of-week detection.
+  </div>
+</div>
+
+<!-- ==================== Error Handling ==================== -->
+<h2>Error Responses</h2>
+
+<div class="endpoint">
+  <table>
+    <thead><tr><th>Status</th><th>Cause</th></tr></thead>
+    <tbody>
+      <tr><td><code>400</code></td><td>Missing required parameters (<code>query</code>, <code>from</code>, or <code>to</code>)</td></tr>
+      <tr><td><code>500</code></td><td>Internal server error (cache not initialized, unexpected data)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+</body>
+</html>

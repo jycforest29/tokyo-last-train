@@ -1,0 +1,49 @@
+.route-list {
+  margin-top: 1.5rem;
+}
+
+.route-list-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.calendar-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent-secondary);
+  background: rgba(2, 132, 199, 0.1);
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.route-count {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.no-routes {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.no-routes-icon {
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.no-routes-text {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.no-routes-text-en {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin: 0.3rem 0 0;
+  opacity: 0.7;
+}

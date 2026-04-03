@@ -1,0 +1,175 @@
+.station-input-wrapper {
+  position: relative;
+  margin-bottom: 0.75rem;
+}
+
+.station-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.station-input-container {
+  position: relative;
+}
+
+.station-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--input-bg);
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.station-input:focus {
+  border-color: var(--accent-secondary);
+}
+
+.station-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+.station-input-spinner {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--accent-secondary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* Chip (selected station) */
+.station-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--input-bg);
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+}
+
+.station-chip-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.station-chip-name {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.station-chip-name-en {
+  font-weight: 400;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin-left: 0.4rem;
+}
+
+.station-chip-line {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+
+.station-chip-clear {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.station-chip-clear:hover {
+  color: var(--accent-primary);
+}
+
+/* Dropdown */
+.station-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0.3rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.station-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.station-dropdown-item:hover,
+.station-dropdown-item.active {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.station-dropdown-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.station-dropdown-info {
+  min-width: 0;
+}
+
+.station-dropdown-name {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.station-dropdown-name-en {
+  font-weight: 400;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  margin-left: 0.4rem;
+}
+
+.station-dropdown-line {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.station-dropdown-line-en {
+  opacity: 0.7;
+}
