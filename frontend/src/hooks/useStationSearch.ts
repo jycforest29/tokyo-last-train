@@ -8,7 +8,7 @@ export function useStationSearch() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedStation, setSelectedStation] = useState<StationInfo | null>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     if (selectedStation || query.length < 1) {
