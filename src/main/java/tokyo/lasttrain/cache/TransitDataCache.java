@@ -54,10 +54,33 @@ public class TransitDataCache {
         this.apiClient = apiClient;
     }
 
+    private volatile boolean ready = false;
+
     @PostConstruct
     public void initialize() {
-        log.info("=== Starting ODPT data cache initialization ===");
+        refresh();
+    }
+
+    public boolean isReady() {
+        return ready;
+    }
+
+    public synchronized void refresh() {
+        log.info("=== ODPT data cache (re)load starting ===");
         long start = System.currentTimeMillis();
+        ready = false;
+
+        stationsById.clear();
+        railwaysById.clear();
+        trainTypesById.clear();
+        calendarsById.clear();
+        stationTimetables.clear();
+        trainTimetables.clear();
+        fares.clear();
+        nameIndex.clear();
+        stationToTrainTimetables.clear();
+        transferGraph.clear();
+        railwayStationOrder.clear();
 
         loadStations();
         loadRailways();
@@ -70,8 +93,9 @@ public class TransitDataCache {
         buildTransferGraph();
         buildStationTrainTimetableIndex();
 
+        ready = true;
         long elapsed = System.currentTimeMillis() - start;
-        log.info("=== ODPT data cache initialized in {}ms ===", elapsed);
+        log.info("=== ODPT data cache loaded in {}ms ===", elapsed);
         log.info("Stations: {}, Railways: {}, StationTimetables: {}, TrainTimetables: {}, Fares: {}",
                 stationsById.size(), railwaysById.size(),
                 stationTimetables.size(), trainTimetables.size(), fares.size());
