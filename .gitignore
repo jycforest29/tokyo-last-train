@@ -7,3 +7,10 @@ target/
 
 # OS
 .DS_Store
+
+# Deploy
+*.pem
+.env
+
+# Frontend build in static
+src/main/resources/static/
