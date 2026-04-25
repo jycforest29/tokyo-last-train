@@ -15,7 +15,7 @@ export function useLastTrain() {
       const res = await findLastTrain(from, to);
       setResult(res);
     } catch {
-      setError('경로 검색에 실패했습니다. 다시 시도해 주세요.');
+      setError('経路検索に失敗しました。もう一度お試しください。');
     } finally {
       setIsLoading(false);
     }

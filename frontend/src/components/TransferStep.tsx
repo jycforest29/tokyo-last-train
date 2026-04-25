@@ -19,14 +19,14 @@ export function TransferStep({ transfer }: Props) {
         <div className="transfer-connector" />
       </div>
       <div className="transfer-info">
-        <div className="transfer-label">환승</div>
+        <div className="transfer-label">乗換</div>
         <div className="transfer-station">
           <span className="transfer-station-ja">{transfer.stationNameJa}</span>
           <span className="transfer-station-en">{transfer.stationNameEn}</span>
         </div>
         <div className="transfer-time">
           {time.display}
-          {time.isNextDay && <span className="next-day">익일</span>}
+          {time.isNextDay && <span className="next-day">翌日</span>}
         </div>
       </div>
     </div>

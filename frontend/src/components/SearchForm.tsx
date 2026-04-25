@@ -32,8 +32,8 @@ export function SearchForm({ onSearch, isLoading }: Props) {
   return (
     <form className="search-form" onSubmit={handleSubmit}>
       <StationInput
-        label="출발역"
-        placeholder="역 이름을 입력하세요"
+        label="出発駅"
+        placeholder="駅名を入力"
         query={fromSearch.query}
         setQuery={fromSearch.setQuery}
         results={fromSearch.results}
@@ -57,8 +57,8 @@ export function SearchForm({ onSearch, isLoading }: Props) {
       </button>
 
       <StationInput
-        label="도착역"
-        placeholder="역 이름을 입력하세요"
+        label="到着駅"
+        placeholder="駅名を入力"
         query={toSearch.query}
         setQuery={toSearch.setQuery}
         results={toSearch.results}
@@ -76,7 +76,7 @@ export function SearchForm({ onSearch, isLoading }: Props) {
         {isLoading ? (
           <span className="search-button-loading" />
         ) : (
-          <>막차 검색</>
+          <>終電を検索</>
 
         )}
       </button>

@@ -14,7 +14,7 @@ export function Header() {
         </svg>
       </div>
       <div className="header-text">
-        <h1 className="header-title">도쿄 막차 검색</h1>
+        <h1 className="header-title">東京終電検索</h1>
         <p className="header-subtitle">Tokyo Last Train Finder</p>
       </div>
     </header>

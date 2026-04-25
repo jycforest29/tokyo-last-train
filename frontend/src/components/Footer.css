@@ -1,0 +1,23 @@
+.footer {
+  margin-top: 48px;
+  padding: 20px 16px;
+  border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  text-align: center;
+}
+
+.footer-attribution {
+  margin: 0 auto;
+  max-width: 720px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-secondary, #888);
+}
+
+.footer-attribution a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.footer-attribution a:hover {
+  color: var(--accent-primary, #4a9eff);
+}

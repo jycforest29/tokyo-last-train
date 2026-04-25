@@ -13,11 +13,11 @@ export function RouteList({ result }: Props) {
     <div className="route-list">
       <div className="route-list-header">
         <span className="calendar-badge">
-          {result.calendarType === 'Weekday' ? '평일' : result.calendarType === 'Saturday' ? '토요일' : '휴일'}
+          {result.calendarType === 'Weekday' ? '平日' : result.calendarType === 'Saturday' ? '土曜' : '休日'}
         </span>
         <span className="route-count">
           {result.routes.length > 0
-            ? `${result.routes.length}개의 경로`
+            ? `${result.routes.length}件の経路`
             : ''}
         </span>
       </div>
@@ -32,8 +32,8 @@ export function RouteList({ result }: Props) {
               <circle cx="30" cy="20" r="2" fill="var(--text-secondary)" />
             </svg>
           </div>
-          <p className="no-routes-text">막차를 찾을 수 없습니다</p>
-          <p className="no-routes-text-en">검색 조건을 확인해 주세요</p>
+          <p className="no-routes-text">終電が見つかりませんでした</p>
+          <p className="no-routes-text-en">検索条件をご確認ください</p>
         </div>
       ) : (
         result.routes.map((route, i) => (

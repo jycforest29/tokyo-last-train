@@ -26,8 +26,8 @@ export function RouteCard({ route, index }: Props) {
       <div className="route-times">
         <div className="route-time-block">
           <span className="route-time">{dep.display}</span>
-          {dep.isNextDay && <span className="next-day">익일</span>}
-          <span className="route-time-label">출발</span>
+          {dep.isNextDay && <span className="next-day">翌日</span>}
+          <span className="route-time-label">出発</span>
         </div>
         <div className="route-arrow">
           <svg width="32" height="16" viewBox="0 0 32 16">
@@ -37,8 +37,8 @@ export function RouteCard({ route, index }: Props) {
         </div>
         <div className="route-time-block">
           <span className="route-time">{arr.display}</span>
-          {arr.isNextDay && <span className="next-day">익일</span>}
-          <span className="route-time-label">도착</span>
+          {arr.isNextDay && <span className="next-day">翌日</span>}
+          <span className="route-time-label">到着</span>
         </div>
       </div>
 
@@ -54,7 +54,7 @@ export function RouteCard({ route, index }: Props) {
 
       {route.destinationNameJa && (
         <div className="route-destination">
-          행선지: {route.destinationNameJa}
+          行先: {route.destinationNameJa}
           {route.destinationNameEn && (
             <span className="route-destination-en"> / {route.destinationNameEn}</span>
           )}
@@ -64,7 +64,7 @@ export function RouteCard({ route, index }: Props) {
       {route.transfers.length > 0 && (
         <div className="route-transfers">
           <div className="route-transfers-title">
-            환승 {route.transfers.length}회
+            乗換 {route.transfers.length}回
           </div>
           {route.transfers.map((t, i) => (
             <TransferStep key={i} transfer={t} />

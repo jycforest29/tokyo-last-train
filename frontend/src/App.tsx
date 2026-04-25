@@ -2,6 +2,7 @@ import { Header } from './components/Header';
 import { SearchForm } from './components/SearchForm';
 import { RouteList } from './components/RouteList';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import { Footer } from './components/Footer';
 import { useLastTrain } from './hooks/useLastTrain';
 import './App.css';
 
@@ -20,6 +21,7 @@ export default function App() {
           </div>
         )}
         <RouteList result={result} />
+        <Footer />
       </div>
     </div>
   );
