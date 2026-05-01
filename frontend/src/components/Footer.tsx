@@ -1,18 +1,20 @@
+import { useTranslation } from '../i18n/LanguageContext';
 import './Footer.css';
 
 export function Footer() {
+  const { t } = useTranslation();
   return (
     <footer className="footer">
       <p className="footer-attribution">
-        本サービスで使用している交通データは、
         <a
           href="https://developer.odpt.org/"
           target="_blank"
           rel="noopener noreferrer"
         >
-          公共交通オープンデータセンター
+          {t('footer.dataSource')}
         </a>
-        から提供されたデータを利用しています。本サービスの内容は公共交通事業者および公共交通オープンデータセンターによって保証されたものではありません。
+        {' — '}
+        {t('footer.attribution')}
       </p>
     </footer>
   );

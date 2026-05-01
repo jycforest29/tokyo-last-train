@@ -1,8 +1,10 @@
 import { useState, useCallback } from 'react';
 import type { LastTrainResponse } from '../types';
 import { findLastTrain } from '../api/client';
+import { useTranslation } from '../i18n/LanguageContext';
 
 export function useLastTrain() {
+  const { t } = useTranslation();
   const [result, setResult] = useState<LastTrainResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -15,11 +17,11 @@ export function useLastTrain() {
       const res = await findLastTrain(from, to);
       setResult(res);
     } catch {
-      setError('経路検索に失敗しました。もう一度お試しください。');
+      setError(t('error.searchFailed'));
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   const clear = useCallback(() => {
     setResult(null);
