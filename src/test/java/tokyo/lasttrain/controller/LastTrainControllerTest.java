@@ -36,10 +36,10 @@ class LastTrainControllerTest {
                 new LastTrainRoute(
                         "23:30", "00:00",
                         "odpt.Railway:Test.LineA",
-                        "テストA線", "Test Line A",
+                        "テストA線", "Test Line A", null,
                         "odpt.RailDirection:Test.Outbound",
                         "Local",
-                        "C駅", "Station C",
+                        "C駅", "Station C", null,
                         List.of(),
                         200
                 )
@@ -70,11 +70,11 @@ class LastTrainControllerTest {
                 new LastTrainRoute(
                         "23:15", "00:10",
                         "odpt.Railway:Test.LineA",
-                        "テストA線", "Test Line A",
+                        "テストA線", "Test Line A", null,
                         null, "Local",
-                        "E駅", "Station E",
+                        "E駅", "Station E", null,
                         List.of(new Transfer(
-                                "B駅", "Station B",
+                                "B駅", "Station B", null,
                                 "odpt.Railway:Test.LineA",
                                 "odpt.Railway:Test.LineB",
                                 "23:40"

@@ -89,10 +89,12 @@ public class LastTrainServiceImpl implements LastTrainService {
         // 노선 정보
         String railwayNameJa = null;
         String railwayNameEn = null;
+        String railwayNameKo = null;
         OdptRailway railway = cache.getRailway(firstRide.railway());
         if (railway != null) {
             railwayNameJa = railway.title();
             railwayNameEn = getLocalizedName(railway.railwayTitle(), "en");
+            railwayNameKo = cache.getRailwayNameKo(firstRide.railway());
         }
 
         // 열차 종별
@@ -105,10 +107,12 @@ public class LastTrainServiceImpl implements LastTrainService {
         // 행선지 (마지막 ride leg의 도착역)
         String destNameJa = null;
         String destNameEn = null;
+        String destNameKo = null;
         OdptStation destStation = cache.getStation(lastRide.toStation());
         if (destStation != null) {
             destNameJa = destStation.title();
             destNameEn = getLocalizedName(destStation.stationTitle(), "en");
+            destNameKo = cache.getStationNameKo(lastRide.toStation());
         }
 
         // 환승 정보
@@ -117,13 +121,14 @@ public class LastTrainServiceImpl implements LastTrainService {
             OdptStation ts = cache.getStation(tl.toStation());
             String tsNameJa = ts != null ? ts.title() : null;
             String tsNameEn = ts != null ? getLocalizedName(ts.stationTitle(), "en") : null;
+            String tsNameKo = ts != null ? cache.getStationNameKo(tl.toStation()) : null;
 
             // 환승 전후 노선
             String fromRailway = findAdjacentRailway(journey.legs(), tl, true);
             String toRailway = findAdjacentRailway(journey.legs(), tl, false);
 
             transfers.add(new Transfer(
-                    tsNameJa, tsNameEn,
+                    tsNameJa, tsNameEn, tsNameKo,
                     fromRailway, toRailway,
                     tl.arrivalTime().toString()
             ));
@@ -138,10 +143,12 @@ public class LastTrainServiceImpl implements LastTrainService {
                 firstRide.railway(),
                 railwayNameJa,
                 railwayNameEn,
+                railwayNameKo,
                 firstRide.railDirection(),
                 trainType,
                 destNameJa,
                 destNameEn,
+                destNameKo,
                 transfers,
                 totalFare
         );

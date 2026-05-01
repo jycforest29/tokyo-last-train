@@ -14,10 +14,12 @@ public record LastTrainResponse(
             String railway,
             String railwayNameJa,
             String railwayNameEn,
+            String railwayNameKo,
             String railDirection,
             String trainType,           // e.g. "Local", "Rapid"
             String destinationNameJa,   // 행선지
             String destinationNameEn,
+            String destinationNameKo,
             List<Transfer> transfers,   // 환승 정보
             int totalFare               // IC카드 기준 총 요금 (엔)
     ) {}
@@ -25,6 +27,7 @@ public record LastTrainResponse(
     public record Transfer(
             String stationNameJa,
             String stationNameEn,
+            String stationNameKo,
             String fromRailway,
             String toRailway,
             String departureTime
