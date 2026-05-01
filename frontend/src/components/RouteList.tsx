@@ -1,5 +1,6 @@
 import type { LastTrainResponse } from '../types';
 import { RouteCard } from './RouteCard';
+import { useTranslation } from '../i18n/LanguageContext';
 import './RouteList.css';
 
 interface Props {
@@ -7,19 +8,25 @@ interface Props {
 }
 
 export function RouteList({ result }: Props) {
+  const { t, language } = useTranslation();
   if (!result) return null;
+
+  const calendarLabel =
+    result.calendarType === 'Weekday' ? t('result.weekday')
+    : result.calendarType === 'Saturday' ? t('result.saturday')
+    : t('result.holiday');
+
+  const routeCountText =
+    result.routes.length === 0 ? '' :
+    language === 'ja' ? `${result.routes.length}件の経路`
+    : language === 'ko' ? `${result.routes.length}개 경로`
+    : `${result.routes.length} route${result.routes.length > 1 ? 's' : ''}`;
 
   return (
     <div className="route-list">
       <div className="route-list-header">
-        <span className="calendar-badge">
-          {result.calendarType === 'Weekday' ? '平日' : result.calendarType === 'Saturday' ? '土曜' : '休日'}
-        </span>
-        <span className="route-count">
-          {result.routes.length > 0
-            ? `${result.routes.length}件の経路`
-            : ''}
-        </span>
+        <span className="calendar-badge">{calendarLabel}</span>
+        <span className="route-count">{routeCountText}</span>
       </div>
 
       {result.routes.length === 0 ? (
@@ -32,8 +39,7 @@ export function RouteList({ result }: Props) {
               <circle cx="30" cy="20" r="2" fill="var(--text-secondary)" />
             </svg>
           </div>
-          <p className="no-routes-text">終電が見つかりませんでした</p>
-          <p className="no-routes-text-en">検索条件をご確認ください</p>
+          <p className="no-routes-text">{t('result.noRoutes')}</p>
         </div>
       ) : (
         result.routes.map((route, i) => (
