@@ -31,9 +31,9 @@ class StationControllerTest {
         StationSearchResponse response = new StationSearchResponse(List.of(
                 new StationInfo(
                         "odpt.Station:TokyoMetro.Ginza.Shibuya",
-                        "渋谷", "Shibuya",
+                        "渋谷", "Shibuya", "시부야",
                         "odpt.Railway:TokyoMetro.Ginza",
-                        "銀座線", "Ginza Line",
+                        "銀座線", "Ginza Line", "긴자선",
                         "odpt.Operator:TokyoMetro",
                         35.6580, 139.7016
                 )
