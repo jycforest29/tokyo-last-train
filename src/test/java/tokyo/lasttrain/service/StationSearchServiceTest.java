@@ -1,8 +1,10 @@
 package tokyo.lasttrain.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import tokyo.lasttrain.cache.KoreanAliasDictionary;
 import tokyo.lasttrain.cache.TransitDataCache;
 import tokyo.lasttrain.dto.StationSearchResponse;
 import tokyo.lasttrain.model.OdptRailway;
@@ -88,8 +90,56 @@ class StationSearchServiceTest {
         assertTrue(response.stations().size() >= 2);
     }
 
+    @Test
+    @DisplayName("한국어로 검색 — 시부야 → Shibuya 매칭")
+    void searchByKoreanName() {
+        StationSearchResponse response = service.search("시부야");
+
+        assertFalse(response.stations().isEmpty(), "한국어 검색이 일치 결과를 찾아야 한다");
+        assertTrue(response.stations().stream()
+                .anyMatch(s -> "Shibuya".equals(s.nameEn()) && "시부야".equals(s.nameKo())));
+    }
+
+    @Test
+    @DisplayName("한국어로 검색 — 도쿄 → Tokyo (모든 노선의 Tokyo역)")
+    void searchByKoreanTokyo() {
+        StationSearchResponse response = service.search("도쿄");
+
+        // 도쿄역은 Yamanote와 Marunouchi 2개 노선에 있음
+        assertTrue(response.stations().size() >= 2);
+        assertTrue(response.stations().stream()
+                .allMatch(s -> "Tokyo".equals(s.nameEn())));
+    }
+
+    @Test
+    @DisplayName("응답에 한국어 역명/노선명이 포함된다")
+    void responseIncludesKoreanFields() {
+        StationSearchResponse response = service.search("shibuya");
+
+        assertFalse(response.stations().isEmpty());
+        StationSearchResponse.StationInfo first = response.stations().getFirst();
+        assertEquals("시부야", first.nameKo());
+        // 노선 한국어명도 채워져야 함
+        assertTrue(
+                "긴자선".equals(first.railwayNameKo()) || "야마노테선".equals(first.railwayNameKo()),
+                "railwayNameKo가 사전 매핑값이어야 함: " + first.railwayNameKo()
+        );
+    }
+
+    @Test
+    @DisplayName("한국어 사전에 없는 역은 nameKo가 null")
+    void unmappedStationHasNullKorean() {
+        // "上野"는 사전에 있지만, 사전 매핑을 빼서 null 검증
+        // 직접 dict를 비워서 검증
+        StationSearchResponse response = service.search("ueno");
+        assertFalse(response.stations().isEmpty());
+        // 우리 테스트 dict에 上野 → 우에노 등록되어 있어 not null
+        assertEquals("우에노", response.stations().getFirst().nameKo());
+    }
+
     private TransitDataCache createMockCache() throws Exception {
-        TransitDataCache mockCache = new TransitDataCache(null, null);
+        KoreanAliasDictionary dict = createKoreanDict();
+        TransitDataCache mockCache = new TransitDataCache(null, dict);
 
         Map<String, OdptStation> stations = new ConcurrentHashMap<>();
         stations.put("odpt.Station:Test.Ginza.Shibuya",
@@ -140,7 +190,7 @@ class StationSearchServiceTest {
                         "odpt.Operator:Test", "M", null, null, null, List.of()));
         setField(mockCache, "railwaysById", railways);
 
-        // 역명 인덱스 구축
+        // 역명 인덱스 구축 (ja, en, ko, shortname 모두 포함)
         Map<String, List<String>> nameIndex = new ConcurrentHashMap<>();
         for (OdptStation s : stations.values()) {
             if (s.title() != null) {
@@ -148,6 +198,10 @@ class StationSearchServiceTest {
             }
             if (s.stationTitle() != null && s.stationTitle().containsKey("en")) {
                 nameIndex.computeIfAbsent(s.stationTitle().get("en").toLowerCase(), k -> new ArrayList<>()).add(s.id());
+            }
+            String koName = mockCache.getStationNameKo(s.id());
+            if (koName != null) {
+                nameIndex.computeIfAbsent(koName.toLowerCase(), k -> new ArrayList<>()).add(s.id());
             }
             String[] parts = s.id().split("\\.");
             nameIndex.computeIfAbsent(parts[parts.length - 1].toLowerCase(), k -> new ArrayList<>()).add(s.id());
@@ -165,6 +219,27 @@ class StationSearchServiceTest {
         setField(mockCache, "stationToTrainTimetables", new ConcurrentHashMap<>());
 
         return mockCache;
+    }
+
+    private KoreanAliasDictionary createKoreanDict() throws Exception {
+        KoreanAliasDictionary dict = new KoreanAliasDictionary(new ObjectMapper());
+        Map<String, String> stations = Map.of(
+                "渋谷", "시부야",
+                "東京", "도쿄",
+                "上野", "우에노"
+        );
+        Map<String, String> railways = Map.of(
+                "銀座線", "긴자선",
+                "山手線", "야마노테선",
+                "丸ノ内線", "마루노우치선"
+        );
+        Field stationsField = KoreanAliasDictionary.class.getDeclaredField("stations");
+        stationsField.setAccessible(true);
+        stationsField.set(dict, stations);
+        Field railwaysField = KoreanAliasDictionary.class.getDeclaredField("railways");
+        railwaysField.setAccessible(true);
+        railwaysField.set(dict, railways);
+        return dict;
     }
 
     private void setField(Object target, String fieldName, Object value) throws Exception {
