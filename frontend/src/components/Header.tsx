@@ -1,6 +1,16 @@
+import { useTranslation } from '../i18n/LanguageContext';
+import type { Language } from '../i18n/translations';
 import './Header.css';
 
+const LANGUAGES: { code: Language; label: string }[] = [
+  { code: 'ja', label: '日本語' },
+  { code: 'en', label: 'EN' },
+  { code: 'ko', label: '한국어' },
+];
+
 export function Header() {
+  const { t, language, setLanguage } = useTranslation();
+
   return (
     <header className="header">
       <div className="header-icon">
@@ -14,8 +24,21 @@ export function Header() {
         </svg>
       </div>
       <div className="header-text">
-        <h1 className="header-title">東京終電検索</h1>
-        <p className="header-subtitle">Tokyo Last Train Finder</p>
+        <h1 className="header-title">{t('app.title')}</h1>
+        <p className="header-subtitle">{t('app.subtitle')}</p>
+      </div>
+      <div className="language-switcher" role="group" aria-label={t('language.label')}>
+        {LANGUAGES.map(({ code, label }) => (
+          <button
+            key={code}
+            type="button"
+            className={`language-button ${language === code ? 'active' : ''}`}
+            onClick={() => setLanguage(code)}
+            aria-pressed={language === code}
+          >
+            {label}
+          </button>
+        ))}
       </div>
     </header>
   );
