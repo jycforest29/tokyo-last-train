@@ -2,9 +2,11 @@ export interface StationInfo {
   stationId: string;
   nameJa: string;
   nameEn: string;
+  nameKo: string | null;
   railway: string;
   railwayNameJa: string;
   railwayNameEn: string;
+  railwayNameKo: string | null;
   operator: string;
   latitude: number;
   longitude: number;
@@ -17,6 +19,7 @@ export interface StationSearchResponse {
 export interface Transfer {
   stationNameJa: string;
   stationNameEn: string;
+  stationNameKo: string | null;
   fromRailway: string;
   toRailway: string;
   departureTime: string;
@@ -28,10 +31,12 @@ export interface LastTrainRoute {
   railway: string;
   railwayNameJa: string;
   railwayNameEn: string;
+  railwayNameKo: string | null;
   railDirection: string;
   trainType: string;
   destinationNameJa: string;
   destinationNameEn: string;
+  destinationNameKo: string | null;
   transfers: Transfer[];
   totalFare: number;
 }
