@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import type { StationInfo } from '../types';
+import { useTranslation } from '../i18n/LanguageContext';
 import { getRailwayColor } from '../utils/format';
 import './StationInput.css';
 
@@ -20,6 +21,7 @@ export function StationInput({
   results, isLoading, selectedStation,
   selectStation, clearSelection,
 }: Props) {
+  const { stationName, stationNameSecondary, railwayName } = useTranslation();
   const [activeIndex, setActiveIndex] = useState(-1);
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -61,6 +63,8 @@ export function StationInput({
   }, [activeIndex]);
 
   if (selectedStation) {
+    const primary = stationName(selectedStation);
+    const secondary = stationNameSecondary(selectedStation);
     return (
       <div className="station-input-wrapper">
         <label className="station-label">{label}</label>
@@ -70,11 +74,18 @@ export function StationInput({
             style={{ backgroundColor: getRailwayColor(selectedStation.railway) }}
           />
           <span className="station-chip-name">
-            {selectedStation.nameJa}
-            <span className="station-chip-name-en">{selectedStation.nameEn}</span>
+            {primary}
+            {secondary && secondary !== primary && (
+              <span className="station-chip-name-en">{secondary}</span>
+            )}
           </span>
-          <span className="station-chip-line">{selectedStation.railwayNameJa}</span>
-          <button className="station-chip-clear" onClick={clearSelection} aria-label="Clear">&times;</button>
+          <span className="station-chip-line">{railwayName(selectedStation)}</span>
+          <button
+            type="button"
+            className="station-chip-clear"
+            onClick={clearSelection}
+            aria-label="Clear"
+          >&times;</button>
         </div>
       </div>
     );
@@ -100,32 +111,35 @@ export function StationInput({
       </div>
       {isOpen && (
         <ul className="station-dropdown" ref={listRef} role="listbox">
-          {results.map((station, i) => (
-            <li
-              key={station.stationId}
-              className={`station-dropdown-item ${i === activeIndex ? 'active' : ''}`}
-              onMouseDown={() => selectStation(station)}
-              role="option"
-              aria-selected={i === activeIndex}
-            >
-              <span
-                className="station-dropdown-dot"
-                style={{ backgroundColor: getRailwayColor(station.railway) }}
-              />
-              <div className="station-dropdown-info">
-                <div className="station-dropdown-name">
-                  {station.nameJa}
-                  <span className="station-dropdown-name-en">{station.nameEn}</span>
+          {results.map((station, i) => {
+            const primary = stationName(station);
+            const secondary = stationNameSecondary(station);
+            return (
+              <li
+                key={station.stationId}
+                className={`station-dropdown-item ${i === activeIndex ? 'active' : ''}`}
+                onMouseDown={() => selectStation(station)}
+                role="option"
+                aria-selected={i === activeIndex}
+              >
+                <span
+                  className="station-dropdown-dot"
+                  style={{ backgroundColor: getRailwayColor(station.railway) }}
+                />
+                <div className="station-dropdown-info">
+                  <div className="station-dropdown-name">
+                    {primary}
+                    {secondary && secondary !== primary && (
+                      <span className="station-dropdown-name-en">{secondary}</span>
+                    )}
+                  </div>
+                  <div className="station-dropdown-line">
+                    {railwayName(station)}
+                  </div>
                 </div>
-                <div className="station-dropdown-line">
-                  {station.railwayNameJa}
-                  {station.railwayNameEn && (
-                    <span className="station-dropdown-line-en"> {station.railwayNameEn}</span>
-                  )}
-                </div>
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

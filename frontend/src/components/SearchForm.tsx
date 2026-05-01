@@ -1,4 +1,5 @@
 import { useStationSearch } from '../hooks/useStationSearch';
+import { useTranslation } from '../i18n/LanguageContext';
 import { StationInput } from './StationInput';
 import './SearchForm.css';
 
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export function SearchForm({ onSearch, isLoading }: Props) {
+  const { t } = useTranslation();
   const fromSearch = useStationSearch();
   const toSearch = useStationSearch();
 
@@ -32,8 +34,8 @@ export function SearchForm({ onSearch, isLoading }: Props) {
   return (
     <form className="search-form" onSubmit={handleSubmit}>
       <StationInput
-        label="出発駅"
-        placeholder="駅名を入力"
+        label={t('search.from')}
+        placeholder={t('search.placeholder')}
         query={fromSearch.query}
         setQuery={fromSearch.setQuery}
         results={fromSearch.results}
@@ -48,7 +50,7 @@ export function SearchForm({ onSearch, isLoading }: Props) {
         className="swap-button"
         onClick={handleSwap}
         disabled={!fromSearch.selectedStation || !toSearch.selectedStation}
-        aria-label="Swap stations"
+        aria-label={t('search.swap')}
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M6 4v12M6 16l-3-3M6 16l3-3M14 16V4M14 4l-3 3M14 4l3 3"
@@ -57,8 +59,8 @@ export function SearchForm({ onSearch, isLoading }: Props) {
       </button>
 
       <StationInput
-        label="到着駅"
-        placeholder="駅名を入力"
+        label={t('search.to')}
+        placeholder={t('search.placeholder')}
         query={toSearch.query}
         setQuery={toSearch.setQuery}
         results={toSearch.results}
@@ -76,8 +78,7 @@ export function SearchForm({ onSearch, isLoading }: Props) {
         {isLoading ? (
           <span className="search-button-loading" />
         ) : (
-          <>終電を検索</>
-
+          <>{t('search.submit')}</>
         )}
       </button>
     </form>

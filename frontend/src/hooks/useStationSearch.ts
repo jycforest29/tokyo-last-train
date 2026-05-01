@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { StationInfo } from '../types';
 import { searchStations } from '../api/client';
+import { useTranslation } from '../i18n/LanguageContext';
 
 export function useStationSearch() {
+  const { stationName } = useTranslation();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<StationInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,9 +44,9 @@ export function useStationSearch() {
 
   const selectStation = useCallback((station: StationInfo) => {
     setSelectedStation(station);
-    setQuery(station.nameEn || station.nameJa);
+    setQuery(stationName(station));
     setResults([]);
-  }, []);
+  }, [stationName]);
 
   const clearSelection = useCallback(() => {
     setSelectedStation(null);
@@ -54,8 +56,8 @@ export function useStationSearch() {
 
   const setStationDirectly = useCallback((station: StationInfo) => {
     setSelectedStation(station);
-    setQuery(station.nameEn || station.nameJa);
-  }, []);
+    setQuery(stationName(station));
+  }, [stationName]);
 
   return { query, setQuery, results, isLoading, selectedStation, selectStation, clearSelection, setStationDirectly };
 }
