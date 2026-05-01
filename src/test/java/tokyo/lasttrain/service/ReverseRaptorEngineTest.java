@@ -233,7 +233,7 @@ class ReverseRaptorEngineTest {
     // === Mock 데이터 생성 ===
 
     private TransitDataCache createMockCache() throws Exception {
-        TransitDataCache mockCache = new TransitDataCache(null);
+        TransitDataCache mockCache = new TransitDataCache(null, null);
 
         // 역 데이터
         Map<String, OdptStation> stations = new ConcurrentHashMap<>();

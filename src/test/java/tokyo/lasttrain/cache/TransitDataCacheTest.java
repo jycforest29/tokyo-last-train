@@ -24,7 +24,7 @@ class TransitDataCacheTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        cache = new TransitDataCache(null);
+        cache = new TransitDataCache(null, null);
         initializeMockData();
     }
 

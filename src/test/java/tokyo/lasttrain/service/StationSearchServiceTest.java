@@ -89,7 +89,7 @@ class StationSearchServiceTest {
     }
 
     private TransitDataCache createMockCache() throws Exception {
-        TransitDataCache mockCache = new TransitDataCache(null);
+        TransitDataCache mockCache = new TransitDataCache(null, null);
 
         Map<String, OdptStation> stations = new ConcurrentHashMap<>();
         stations.put("odpt.Station:Test.Ginza.Shibuya",

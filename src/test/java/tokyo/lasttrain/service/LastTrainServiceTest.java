@@ -188,7 +188,7 @@ class LastTrainServiceTest {
     }
 
     private TransitDataCache createMockCache() throws Exception {
-        TransitDataCache mockCache = new TransitDataCache(null);
+        TransitDataCache mockCache = new TransitDataCache(null, null);
 
         // 역 데이터 (2개 노선, 환승 포함)
         Map<String, OdptStation> stations = new ConcurrentHashMap<>();

@@ -22,6 +22,7 @@ public class TransitDataCache {
     private static final Logger log = LoggerFactory.getLogger(TransitDataCache.class);
 
     private final OdptApiClient apiClient;
+    private final KoreanAliasDictionary koreanAliases;
 
     // 기본 데이터
     private final Map<String, OdptStation> stationsById = new ConcurrentHashMap<>();
@@ -50,8 +51,9 @@ public class TransitDataCache {
     // 노선별 역 순서: railwayId → 정렬된 stationId 리스트
     private final Map<String, List<String>> railwayStationOrder = new ConcurrentHashMap<>();
 
-    public TransitDataCache(OdptApiClient apiClient) {
+    public TransitDataCache(OdptApiClient apiClient, KoreanAliasDictionary koreanAliases) {
         this.apiClient = apiClient;
+        this.koreanAliases = koreanAliases;
     }
 
     private volatile boolean ready = false;
@@ -162,6 +164,12 @@ public class TransitDataCache {
                 nameIndex.computeIfAbsent(station.stationTitle().get("en").toLowerCase(), k -> new ArrayList<>())
                         .add(station.id());
             }
+            // 한국어 역명 (alias dict 기반)
+            String koName = koreanAliases != null ? koreanAliases.stationKo(station.title()) : null;
+            if (koName != null) {
+                nameIndex.computeIfAbsent(koName.toLowerCase(), k -> new ArrayList<>())
+                        .add(station.id());
+            }
             // stationId에서 역명 부분 추출 (e.g. "odpt.Station:JR-East.Yamanote.Tokyo" → "tokyo")
             String[] parts = station.id().split("\\.");
             if (parts.length > 0) {
@@ -170,6 +178,20 @@ public class TransitDataCache {
                         .add(station.id());
             }
         }
+    }
+
+    /** 역의 한국어 표기 (없으면 null). */
+    public String getStationNameKo(String stationId) {
+        if (koreanAliases == null) return null;
+        OdptStation s = stationsById.get(stationId);
+        return s != null ? koreanAliases.stationKo(s.title()) : null;
+    }
+
+    /** 노선의 한국어 표기 (없으면 null). */
+    public String getRailwayNameKo(String railwayId) {
+        if (koreanAliases == null) return null;
+        OdptRailway r = railwaysById.get(railwayId);
+        return r != null ? koreanAliases.railwayKo(r.title()) : null;
     }
 
     private void buildStationTrainTimetableIndex() {
