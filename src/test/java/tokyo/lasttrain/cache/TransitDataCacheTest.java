@@ -1,12 +1,12 @@
 package tokyo.lasttrain.cache;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import tokyo.lasttrain.model.*;
 
 import java.lang.reflect.Field;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,8 +24,28 @@ class TransitDataCacheTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        cache = new TransitDataCache(null, null);
+        cache = new TransitDataCache(null, createKoreanDict());
         initializeMockData();
+    }
+
+    private KoreanAliasDictionary createKoreanDict() throws Exception {
+        KoreanAliasDictionary dict = new KoreanAliasDictionary(new ObjectMapper());
+        Map<String, String> stations = Map.of(
+                "渋谷", "시부야",
+                "東京", "도쿄",
+                "上野", "우에노"
+        );
+        Map<String, String> railways = Map.of(
+                "銀座線", "긴자선",
+                "山手線", "야마노테선"
+        );
+        Field stationsField = KoreanAliasDictionary.class.getDeclaredField("stations");
+        stationsField.setAccessible(true);
+        stationsField.set(dict, stations);
+        Field railwaysField = KoreanAliasDictionary.class.getDeclaredField("railways");
+        railwaysField.setAccessible(true);
+        railwaysField.set(dict, railways);
+        return dict;
     }
 
     // === resolveCalendar ===
@@ -114,6 +134,49 @@ class TransitDataCacheTest {
     void searchStationsJapanese() {
         List<String> results = cache.searchStations("渋谷");
         assertFalse(results.isEmpty());
+    }
+
+    @Test
+    @DisplayName("한국어 역명 검색 — 시부야 → Shibuya 매칭")
+    void searchStationsKorean() {
+        List<String> results = cache.searchStations("시부야");
+        assertFalse(results.isEmpty(), "한국어 검색이 결과를 찾아야 한다");
+        assertTrue(results.contains(STATION_SHIBUYA_GINZA) || results.contains(STATION_SHIBUYA_YAMANOTE));
+    }
+
+    @Test
+    @DisplayName("한국어 역명 검색 — 도쿄 (모든 노선)")
+    void searchStationsKoreanTokyo() {
+        List<String> results = cache.searchStations("도쿄");
+        assertTrue(results.contains(STATION_TOKYO_YAMANOTE));
+    }
+
+    @Test
+    @DisplayName("getStationNameKo — 사전에 있는 역")
+    void getStationNameKoMapped() {
+        assertEquals("시부야", cache.getStationNameKo(STATION_SHIBUYA_GINZA));
+        assertEquals("시부야", cache.getStationNameKo(STATION_SHIBUYA_YAMANOTE));
+        assertEquals("도쿄", cache.getStationNameKo(STATION_TOKYO_YAMANOTE));
+        assertEquals("우에노", cache.getStationNameKo(STATION_UENO));
+    }
+
+    @Test
+    @DisplayName("getStationNameKo — 존재하지 않는 역은 null")
+    void getStationNameKoNotExists() {
+        assertNull(cache.getStationNameKo("odpt.Station:Fake.X"));
+    }
+
+    @Test
+    @DisplayName("getRailwayNameKo — 사전에 있는 노선")
+    void getRailwayNameKoMapped() {
+        assertEquals("긴자선", cache.getRailwayNameKo("odpt.Railway:TokyoMetro.Ginza"));
+        assertEquals("야마노테선", cache.getRailwayNameKo("odpt.Railway:JR.Yamanote"));
+    }
+
+    @Test
+    @DisplayName("getRailwayNameKo — 존재하지 않는 노선은 null")
+    void getRailwayNameKoNotExists() {
+        assertNull(cache.getRailwayNameKo("odpt.Railway:Fake"));
     }
 
     @Test
@@ -317,7 +380,7 @@ class TransitDataCacheTest {
                 "各停", Map.of("ja", "各停", "en", "Local")));
         setField(cache, "trainTypesById", trainTypes);
 
-        // 역명 검색 인덱스
+        // 역명 검색 인덱스 (ja, en, ko, shortname)
         Map<String, List<String>> nameIndex = new ConcurrentHashMap<>();
         for (OdptStation s : stations.values()) {
             if (s.title() != null) {
@@ -325,6 +388,10 @@ class TransitDataCacheTest {
             }
             if (s.stationTitle() != null && s.stationTitle().containsKey("en")) {
                 nameIndex.computeIfAbsent(s.stationTitle().get("en").toLowerCase(), k -> new ArrayList<>()).add(s.id());
+            }
+            String koName = cache.getStationNameKo(s.id());
+            if (koName != null) {
+                nameIndex.computeIfAbsent(koName.toLowerCase(), k -> new ArrayList<>()).add(s.id());
             }
             String[] parts = s.id().split("\\.");
             nameIndex.computeIfAbsent(parts[parts.length - 1].toLowerCase(), k -> new ArrayList<>()).add(s.id());
