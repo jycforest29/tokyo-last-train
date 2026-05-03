@@ -128,3 +128,92 @@
   border-radius: 3px;
   margin-left: 0.25rem;
 }
+
+.route-countdown {
+  margin-left: auto;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  letter-spacing: 0.01em;
+}
+
+.route-countdown--ok {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.route-countdown--soon {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.route-countdown--urgent {
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.15);
+  animation: countdown-pulse 1.6s ease-in-out infinite;
+}
+
+.route-countdown--gone {
+  color: var(--text-secondary);
+  background: rgba(148, 163, 184, 0.15);
+  text-decoration: line-through;
+}
+
+@keyframes countdown-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.route-fare {
+  margin-left: 0;
+}
+
+.route-alert {
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px dashed var(--border-color);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.route-alert-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-right: 0.2rem;
+}
+
+.route-alert-btn {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.route-alert-btn:hover:not(:disabled) {
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
+}
+
+.route-alert-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.route-alert-btn.is-active {
+  border-color: var(--accent-secondary);
+  background: var(--accent-secondary);
+  color: #fff;
+}
+
+.route-alert-msg {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-left: 0.3rem;
+}

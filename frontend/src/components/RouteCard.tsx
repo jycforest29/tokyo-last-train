@@ -1,6 +1,8 @@
 import type { LastTrainRoute } from '../types';
 import { getRailwayColor, formatTime, formatFare } from '../utils/format';
 import { useTranslation } from '../i18n/LanguageContext';
+import { useCountdown } from '../hooks/useCountdown';
+import { useLastTrainAlert } from '../hooks/useLastTrainAlert';
 import { TransferStep } from './TransferStep';
 import './RouteCard.css';
 
@@ -18,6 +20,37 @@ export function RouteCard({ route, index }: Props) {
   const destName = destinationName(route);
   const nextDayLabel = language === 'ja' ? '翌日' : language === 'ko' ? '익일' : 'next day';
 
+  const minutesLeft = useCountdown(route.departureTime);
+  const { status, schedule, cancel } = useLastTrainAlert(route.departureTime);
+
+  const countdownLabel = formatCountdown(minutesLeft, t);
+  const countdownTone = toneForMinutes(minutesLeft);
+
+  const handleNotify = (minutesBefore: number) => {
+    const body = format(t('alert.notifBody'), {
+      line: lineName,
+      dest: destName ?? '',
+      time: dep.display,
+      n: String(minutesBefore),
+    });
+    void schedule(minutesBefore, t('app.title'), body);
+  };
+
+  const alertMessage = (() => {
+    switch (status.kind) {
+      case 'scheduled':
+        return `${t('alert.scheduled')} · ${t('alert.keepTabOpen')}`;
+      case 'denied':
+        return t('alert.denied');
+      case 'too-late':
+        return t('alert.tooLate');
+      case 'unsupported':
+        return null;
+      default:
+        return null;
+    }
+  })();
+
   return (
     <div className="route-card" style={{ borderLeftColor: color }}>
       <div className="route-header">
@@ -25,6 +58,7 @@ export function RouteCard({ route, index }: Props) {
         {route.trainType && (
           <span className="route-train-type">{route.trainType}</span>
         )}
+        <span className={`route-countdown route-countdown--${countdownTone}`}>{countdownLabel}</span>
         <span className="route-fare">{formatFare(route.totalFare)}</span>
       </div>
 
@@ -72,6 +106,48 @@ export function RouteCard({ route, index }: Props) {
           ))}
         </div>
       )}
+
+      {minutesLeft > 5 && (
+        <div className="route-alert">
+          <span className="route-alert-label">🔔 {t('alert.title')}</span>
+          {[30, 15, 5].map((mins) => {
+            const disabled = minutesLeft <= mins;
+            const isSelected = status.kind === 'scheduled' && status.minutesBefore === mins;
+            return (
+              <button
+                key={mins}
+                type="button"
+                className={`route-alert-btn${isSelected ? ' is-active' : ''}`}
+                disabled={disabled}
+                onClick={() => (isSelected ? cancel() : handleNotify(mins))}
+              >
+                {t(mins === 30 ? 'alert.notify30' : mins === 15 ? 'alert.notify15' : 'alert.notify5')}
+              </button>
+            );
+          })}
+          {alertMessage && <span className="route-alert-msg">{alertMessage}</span>}
+        </div>
+      )}
     </div>
   );
+}
+
+function formatCountdown(minutes: number, t: (k: 'countdown.departed' | 'countdown.soon' | 'countdown.minutes' | 'countdown.hourMinutes') => string): string {
+  if (minutes < 0) return t('countdown.departed');
+  if (minutes < 1) return t('countdown.soon');
+  if (minutes < 60) return format(t('countdown.minutes'), { n: String(minutes) });
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return format(t('countdown.hourMinutes'), { h: String(h), m: String(m) });
+}
+
+function toneForMinutes(minutes: number): 'gone' | 'urgent' | 'soon' | 'ok' {
+  if (minutes < 0) return 'gone';
+  if (minutes <= 10) return 'urgent';
+  if (minutes <= 30) return 'soon';
+  return 'ok';
+}
+
+function format(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
 }

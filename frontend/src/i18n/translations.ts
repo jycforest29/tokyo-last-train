@@ -31,7 +31,21 @@ export type TranslationKey =
   | 'loading'
   | 'language.label'
   | 'footer.attribution'
-  | 'footer.dataSource';
+  | 'footer.dataSource'
+  | 'countdown.departed'
+  | 'countdown.soon'
+  | 'countdown.minutes'
+  | 'countdown.hourMinutes'
+  | 'alert.title'
+  | 'alert.notify30'
+  | 'alert.notify15'
+  | 'alert.notify5'
+  | 'alert.scheduled'
+  | 'alert.cancel'
+  | 'alert.tooLate'
+  | 'alert.denied'
+  | 'alert.keepTabOpen'
+  | 'alert.notifBody';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   ja: {
@@ -66,6 +80,20 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'language.label': '言語',
     'footer.attribution': '本サービスで使用している交通データは、公共交通オープンデータセンターから提供されたデータを利用しています。本サービスの内容は公共交通事業者および公共交通オープンデータセンターによって保証されたものではありません。',
     'footer.dataSource': '公共交通オープンデータセンター',
+    'countdown.departed': '出発済み',
+    'countdown.soon': 'まもなく発車',
+    'countdown.minutes': 'あと{n}分',
+    'countdown.hourMinutes': 'あと{h}時間{m}分',
+    'alert.title': '通知',
+    'alert.notify30': '30分前',
+    'alert.notify15': '15分前',
+    'alert.notify5': '5分前',
+    'alert.scheduled': '通知予約済み',
+    'alert.cancel': '取消',
+    'alert.tooLate': 'もう間に合いません',
+    'alert.denied': '通知が許可されていません',
+    'alert.keepTabOpen': 'このタブを開いたままにしてください',
+    'alert.notifBody': '{line} {dest}行 {time}発まで{n}分',
   },
   en: {
     'app.title': 'Tokyo Last Train Finder',
@@ -99,6 +127,20 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'language.label': 'Language',
     'footer.attribution': 'Transit data used by this service is provided by the Public Transportation Open Data Center. The content is not endorsed by the public transportation operators or by the Open Data Center.',
     'footer.dataSource': 'Public Transportation Open Data Center',
+    'countdown.departed': 'Departed',
+    'countdown.soon': 'Departing soon',
+    'countdown.minutes': '{n} min left',
+    'countdown.hourMinutes': '{h}h {m}m left',
+    'alert.title': 'Notify',
+    'alert.notify30': '30 min before',
+    'alert.notify15': '15 min before',
+    'alert.notify5': '5 min before',
+    'alert.scheduled': 'Notification set',
+    'alert.cancel': 'Cancel',
+    'alert.tooLate': 'Too late to set',
+    'alert.denied': 'Notifications blocked',
+    'alert.keepTabOpen': 'Keep this tab open',
+    'alert.notifBody': '{line} bound for {dest} departs in {n} min ({time})',
   },
   ko: {
     'app.title': '도쿄 막차 검색',
@@ -132,5 +174,19 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'language.label': '언어',
     'footer.attribution': '본 서비스에서 사용하는 교통 데이터는 공공교통 오픈데이터센터에서 제공된 데이터를 이용하고 있습니다. 본 서비스의 내용은 공공교통 사업자 및 공공교통 오픈데이터센터에 의해 보증된 것이 아닙니다.',
     'footer.dataSource': '공공교통 오픈데이터센터',
+    'countdown.departed': '출발 완료',
+    'countdown.soon': '곧 출발',
+    'countdown.minutes': '{n}분 남음',
+    'countdown.hourMinutes': '{h}시간 {m}분 남음',
+    'alert.title': '알림',
+    'alert.notify30': '30분 전',
+    'alert.notify15': '15분 전',
+    'alert.notify5': '5분 전',
+    'alert.scheduled': '알림 예약됨',
+    'alert.cancel': '취소',
+    'alert.tooLate': '시간이 부족합니다',
+    'alert.denied': '알림이 차단되어 있습니다',
+    'alert.keepTabOpen': '이 탭을 열어두세요',
+    'alert.notifBody': '{line} {dest}행 {time} 출발 {n}분 전',
   },
 };
