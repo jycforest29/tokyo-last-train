@@ -1,5 +1,6 @@
 import { useStationSearch } from '../hooks/useStationSearch';
 import { useHomeFavorite } from '../hooks/useHomeFavorite';
+import { useGpsNearest } from '../hooks/useGpsNearest';
 import { useTranslation } from '../i18n/LanguageContext';
 import { StationInput } from './StationInput';
 import './SearchForm.css';
@@ -14,8 +15,22 @@ export function SearchForm({ onSearch, isLoading }: Props) {
   const fromSearch = useStationSearch();
   const toSearch = useStationSearch();
   const { home, setHome, clearHome } = useHomeFavorite();
+  const gps = useGpsNearest();
   const destination = toSearch.selectedStation;
   const isHome = !!destination && !!home && home.stationId === destination.stationId;
+
+  const gpsErrorKey =
+    gps.status.kind === 'denied' ? 'gps.denied'
+    : gps.status.kind === 'unsupported' ? 'gps.unsupported'
+    : gps.status.kind === 'error' ? 'gps.error'
+    : null;
+
+  const handleGpsClick = async () => {
+    const station = await gps.locate();
+    if (station) {
+      fromSearch.setStationDirectly(station);
+    }
+  };
 
   const canSearch = fromSearch.selectedStation && toSearch.selectedStation && !isLoading;
 
@@ -48,6 +63,20 @@ export function SearchForm({ onSearch, isLoading }: Props) {
         selectStation={fromSearch.selectStation}
         clearSelection={fromSearch.clearSelection}
       />
+
+      {!fromSearch.selectedStation && (
+        <button
+          type="button"
+          className="gps-button"
+          onClick={handleGpsClick}
+          disabled={gps.status.kind === 'locating'}
+        >
+          {gps.status.kind === 'locating' ? t('gps.locating') : t('gps.useCurrent')}
+        </button>
+      )}
+      {gpsErrorKey && (
+        <p className="gps-error">{t(gpsErrorKey)}</p>
+      )}
 
       <button
         type="button"

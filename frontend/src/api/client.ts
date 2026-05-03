@@ -1,4 +1,4 @@
-import type { StationSearchResponse, LastTrainResponse } from '../types';
+import type { StationSearchResponse, LastTrainResponse, StationInfo } from '../types';
 
 export async function searchStations(
   query: string,
@@ -22,5 +22,18 @@ export async function findLastTrain(
     { signal }
   );
   if (!res.ok) throw new Error(`Last train search failed: ${res.status}`);
+  return res.json();
+}
+
+export async function findNearestStation(
+  latitude: number,
+  longitude: number,
+  signal?: AbortSignal
+): Promise<StationInfo> {
+  const res = await fetch(
+    `/api/v1/stations/nearest?lat=${latitude}&lng=${longitude}`,
+    { signal }
+  );
+  if (!res.ok) throw new Error(`Nearest station lookup failed: ${res.status}`);
   return res.json();
 }

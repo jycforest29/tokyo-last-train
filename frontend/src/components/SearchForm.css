@@ -100,3 +100,36 @@
   border-style: solid;
   border-color: var(--accent-secondary);
 }
+
+.gps-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0.5rem 0 0;
+  padding: 0.4rem 0.85rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.gps-button:hover:not(:disabled) {
+  color: var(--accent-secondary);
+  border-color: var(--accent-secondary);
+  background: rgba(2, 132, 199, 0.05);
+}
+
+.gps-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.gps-error {
+  margin: 0.4rem 0 0;
+  font-size: 0.75rem;
+  color: #b91c1c;
+}

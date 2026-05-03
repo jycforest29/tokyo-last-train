@@ -48,7 +48,12 @@ export type TranslationKey =
   | 'alert.notifBody'
   | 'home.set'
   | 'home.unset'
-  | 'home.saved';
+  | 'home.saved'
+  | 'gps.useCurrent'
+  | 'gps.locating'
+  | 'gps.denied'
+  | 'gps.unsupported'
+  | 'gps.error';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   ja: {
@@ -100,6 +105,11 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'home.set': '🏠 自宅に設定',
     'home.unset': '🏠 自宅を解除',
     'home.saved': '自宅: {station}',
+    'gps.useCurrent': '📍 現在地から',
+    'gps.locating': '📍 位置情報取得中…',
+    'gps.denied': '位置情報の使用が許可されていません',
+    'gps.unsupported': 'このブラウザは位置情報に対応していません',
+    'gps.error': '現在地を取得できませんでした',
   },
   en: {
     'app.title': 'Tokyo Last Train Finder',
@@ -150,6 +160,11 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'home.set': '🏠 Save as home',
     'home.unset': '🏠 Remove home',
     'home.saved': 'Home: {station}',
+    'gps.useCurrent': '📍 Use current location',
+    'gps.locating': '📍 Locating…',
+    'gps.denied': 'Location access denied',
+    'gps.unsupported': 'Geolocation not supported',
+    'gps.error': 'Could not get your location',
   },
   ko: {
     'app.title': '도쿄 막차 검색',
@@ -200,5 +215,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'home.set': '🏠 자택으로 등록',
     'home.unset': '🏠 자택 등록 해제',
     'home.saved': '자택: {station}',
+    'gps.useCurrent': '📍 현재 위치로',
+    'gps.locating': '📍 위치 확인 중…',
+    'gps.denied': '위치 정보 접근이 거부되었습니다',
+    'gps.unsupported': '브라우저가 위치 정보를 지원하지 않습니다',
+    'gps.error': '현재 위치를 가져올 수 없습니다',
   },
 };
