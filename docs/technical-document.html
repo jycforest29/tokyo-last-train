@@ -3,1093 +3,1231 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tokyo Last Train Finder - Technical Document</title>
+<title>Tokyo Last Train Finder — Technical Document</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   @page {
     size: A4;
-    margin: 20mm 18mm;
+    margin: 18mm 16mm;
+  }
+
+  html, body {
+    font-family: 'Noto Sans KR', sans-serif;
+    color: #1f2937;
+    line-height: 1.65;
+    font-size: 10.5pt;
+    background: #fff;
   }
 
   body {
-    font-family: 'Noto Sans KR', sans-serif;
-    color: #1a1a1a;
-    line-height: 1.7;
-    font-size: 10.5pt;
-    background: #fff;
-    padding: 0 24px;
     max-width: 210mm;
     margin: 0 auto;
+    padding: 0 18px;
   }
 
-  /* ===== COVER ===== */
+  /* ============= COVER ============= */
   .cover {
     page-break-after: always;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 90vh;
+    min-height: 92vh;
     text-align: center;
   }
-  .cover-icon {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, #e94560, #0284c7);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 2rem;
-    color: #fff;
-    font-size: 2.5rem;
-    font-weight: 700;
+  .cover-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    background: #eef2ff;
+    color: #4338ca;
+    font-size: 9pt;
+    font-weight: 600;
+    border-radius: 999px;
+    letter-spacing: 0.5px;
+    margin-bottom: 2.4rem;
   }
   .cover h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 0.3rem;
-    letter-spacing: -0.02em;
+    font-size: 32pt;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    letter-spacing: -0.5px;
+    color: #0f172a;
   }
-  .cover .cover-sub {
-    font-size: 1.1rem;
-    color: #6b7280;
-    margin-bottom: 2.5rem;
+  .cover .subtitle {
+    font-size: 13pt;
+    color: #475569;
+    margin-bottom: 3rem;
+    max-width: 480px;
   }
-  .cover-meta {
-    font-size: 0.9rem;
-    color: #9ca3af;
-    line-height: 2;
+  .cover .meta {
+    font-size: 9.5pt;
+    color: #64748b;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1.2rem;
+    margin-top: 2rem;
+    width: 320px;
   }
+  .cover .meta-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+  .cover .meta-row span:first-child { color: #94a3b8; }
+  .cover .meta-row span:last-child { font-weight: 500; color: #334155; }
 
-  /* ===== TOC ===== */
+  /* ============= TOC ============= */
   .toc {
     page-break-after: always;
+    padding-top: 2rem;
   }
   .toc h2 {
-    font-size: 1.3rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid #1a1a1a;
+    font-size: 18pt;
+    margin-bottom: 1.6rem;
+    color: #0f172a;
+    border-bottom: 2px solid #0f172a;
     padding-bottom: 0.5rem;
   }
   .toc ol {
     list-style: none;
     counter-reset: toc;
   }
-  .toc > ol > li {
+  .toc ol li {
     counter-increment: toc;
-    margin-bottom: 0.4rem;
+    padding: 8px 0;
+    border-bottom: 1px dashed #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11pt;
   }
-  .toc > ol > li::before {
-    content: counter(toc) ".";
+  .toc ol li::before {
+    content: counter(toc, decimal-leading-zero) ". ";
+    color: #6366f1;
     font-weight: 600;
-    margin-right: 0.5rem;
-    color: #0284c7;
-  }
-  .toc a {
-    color: #1a1a1a;
-    text-decoration: none;
-    font-size: 0.95rem;
-  }
-  .toc .toc-sub {
-    margin-left: 1.8rem;
-    margin-top: 0.2rem;
-  }
-  .toc .toc-sub li {
-    font-size: 0.85rem;
-    color: #6b7280;
-    margin-bottom: 0.15rem;
-  }
-
-  /* ===== SECTIONS ===== */
-  h2 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin: 2.5rem 0 1rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 2px solid #e94560;
-    page-break-after: avoid;
-  }
-  h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #0284c7;
-    margin: 1.8rem 0 0.6rem;
-    page-break-after: avoid;
-  }
-  h4 {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #374151;
-    margin: 1.2rem 0 0.4rem;
-    page-break-after: avoid;
-  }
-
-  p { margin-bottom: 0.7rem; }
-
-  /* ===== CODE ===== */
-  pre {
-    background: #f8f9fa;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    padding: 0.8rem 1rem;
-    overflow-x: auto;
+    margin-right: 12px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem;
-    line-height: 1.5;
-    margin: 0.6rem 0 1rem;
-    page-break-inside: avoid;
   }
+  .toc ol li span:first-child { flex: 1; }
+  .toc ol li span:last-child { color: #94a3b8; font-family: 'JetBrains Mono', monospace; font-size: 9pt; }
+
+  /* ============= SECTIONS ============= */
+  section {
+    margin-bottom: 2.4rem;
+  }
+  section h2 {
+    font-size: 16pt;
+    color: #0f172a;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0 0.5rem 12px;
+    border-left: 4px solid #4f46e5;
+    page-break-after: avoid;
+  }
+  section h3 {
+    font-size: 12pt;
+    color: #1e293b;
+    margin: 1.4rem 0 0.7rem 0;
+    page-break-after: avoid;
+  }
+  section h4 {
+    font-size: 10.5pt;
+    color: #334155;
+    margin: 1rem 0 0.4rem 0;
+    font-weight: 600;
+    page-break-after: avoid;
+  }
+  section p {
+    margin-bottom: 0.8rem;
+    text-align: justify;
+  }
+  section ul, section ol {
+    padding-left: 22px;
+    margin-bottom: 0.9rem;
+  }
+  section li { margin-bottom: 0.3rem; }
+
   code {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.82rem;
-    background: #f3f4f6;
-    padding: 0.1rem 0.35rem;
+    font-size: 9pt;
+    background: #f1f5f9;
+    padding: 1px 5px;
     border-radius: 3px;
-    color: #dc2626;
+    color: #be123c;
+  }
+  pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5pt;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 14px 18px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 0.8rem 0 1.2rem 0;
+    line-height: 1.5;
+    page-break-inside: avoid;
   }
   pre code {
-    background: none;
-    padding: 0;
+    background: transparent;
     color: inherit;
+    padding: 0;
+    font-size: inherit;
   }
+  pre .c1 { color: #94a3b8; }   /* comment */
+  pre .k  { color: #c084fc; }   /* keyword */
+  pre .s  { color: #86efac; }   /* string */
+  pre .n  { color: #f9a8d4; }   /* name */
 
-  /* ===== TABLE ===== */
   table {
     width: 100%;
     border-collapse: collapse;
-    margin: 0.6rem 0 1.2rem;
-    font-size: 0.85rem;
+    margin: 0.7rem 0 1.2rem 0;
+    font-size: 9.5pt;
     page-break-inside: avoid;
   }
-  th {
-    background: #f8f9fa;
-    font-weight: 600;
+  th, td {
+    border: 1px solid #e2e8f0;
+    padding: 7px 10px;
     text-align: left;
-    padding: 0.5rem 0.7rem;
-    border: 1px solid #e5e7eb;
-    font-size: 0.8rem;
-    color: #374151;
-  }
-  td {
-    padding: 0.45rem 0.7rem;
-    border: 1px solid #e5e7eb;
     vertical-align: top;
   }
-  tr:nth-child(even) { background: #fafbfc; }
-
-  /* ===== LIST ===== */
-  ul, ol {
-    margin: 0.4rem 0 0.8rem 1.5rem;
+  th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #1e293b;
   }
-  li { margin-bottom: 0.25rem; }
+  td code { font-size: 8.5pt; }
 
-  /* ===== CALLOUT ===== */
   .callout {
-    background: #eff6ff;
-    border-left: 4px solid #0284c7;
-    padding: 0.7rem 1rem;
-    margin: 0.8rem 0;
-    border-radius: 0 6px 6px 0;
-    font-size: 0.9rem;
-    page-break-inside: avoid;
-  }
-  .callout strong { color: #0284c7; }
-
-  .callout-warn {
-    background: #fef3c7;
-    border-left-color: #f59e0b;
-  }
-  .callout-warn strong { color: #b45309; }
-
-  /* ===== DIAGRAM ===== */
-  .diagram {
-    background: #f8f9fa;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 1.2rem;
+    border-left: 4px solid #6366f1;
+    background: #eef2ff;
+    padding: 12px 16px;
     margin: 1rem 0;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.82rem;
-    line-height: 1.6;
+    border-radius: 0 4px 4px 0;
+    font-size: 10pt;
+  }
+  .callout strong { color: #4338ca; }
+  .callout.warn {
+    border-color: #f59e0b;
+    background: #fffbeb;
+  }
+  .callout.warn strong { color: #b45309; }
+
+  .arch-figure {
     text-align: center;
+    margin: 1rem 0 1.5rem 0;
     page-break-inside: avoid;
   }
-
-  /* ===== BADGE ===== */
-  .badge {
-    display: inline-block;
-    font-size: 0.7rem;
-    padding: 0.12rem 0.4rem;
-    border-radius: 4px;
-    font-weight: 600;
-    vertical-align: middle;
+  .arch-figure svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
   }
-  .badge-blue { background: #dbeafe; color: #1e40af; }
-  .badge-green { background: #dcfce7; color: #166534; }
-  .badge-red { background: #fee2e2; color: #991b1b; }
-  .badge-gray { background: #f3f4f6; color: #374151; }
-  .badge-orange { background: #ffedd5; color: #9a3412; }
-
-  /* ===== MOCKUP ===== */
-  .mockup {
-    border: 2px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 1rem;
-    margin: 1rem 0;
-    background: #f5f6f8;
-    page-break-inside: avoid;
-  }
-  .mockup-title {
-    font-size: 0.75rem;
-    color: #9ca3af;
-    text-align: center;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-  .mockup-inner {
-    background: #fff;
-    border-radius: 12px;
-    padding: 1rem;
-    border: 1px solid #e5e7eb;
-  }
-  .mockup-header {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 0.3rem;
-  }
-  .mockup-sub { font-size: 0.7rem; color: #9ca3af; margin-bottom: 1rem; }
-  .mockup-input {
-    background: #f9fafb;
-    border: 1.5px solid #e2e5e9;
-    border-radius: 8px;
-    padding: 0.5rem 0.7rem;
-    margin-bottom: 0.5rem;
-    font-size: 0.8rem;
-    color: #6b7280;
-  }
-  .mockup-btn {
-    background: #e94560;
-    color: #fff;
-    border-radius: 8px;
-    padding: 0.5rem;
-    text-align: center;
-    font-weight: 600;
-    font-size: 0.85rem;
-    margin-top: 0.3rem;
-  }
-  .mockup-card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-left: 4px solid #F39700;
-    border-radius: 8px;
-    padding: 0.7rem;
-    margin-top: 0.8rem;
-  }
-  .mockup-time {
-    font-size: 1.2rem;
-    font-weight: 700;
-    text-align: center;
-    margin: 0.3rem 0;
-  }
-  .mockup-line {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.75rem;
-    color: #6b7280;
-  }
-  .mockup-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: inline-block;
+  .arch-figure .caption {
+    font-size: 9pt;
+    color: #64748b;
+    margin-top: 0.5rem;
   }
 
-  .section { page-break-before: always; }
-  .section:first-of-type { page-break-before: auto; }
-
-  /* ===== COLOR SWATCH ===== */
-  .color-grid {
+  .grid-2 {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.4rem;
-    margin: 0.5rem 0 1rem;
-  }
-  .color-item {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.75rem;
-    padding: 0.25rem 0.4rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 4px;
-  }
-  .color-swatch {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    flex-shrink: 0;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 0.8rem 0;
   }
 
-  @media print {
-    body { padding: 0; }
-    .no-print { display: none; }
+  .card {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 12px 14px;
+    background: #fafafa;
+    page-break-inside: avoid;
+  }
+  .card h4 {
+    font-size: 10pt;
+    color: #4f46e5;
+    margin: 0 0 6px 0;
+  }
+  .card p { font-size: 9.5pt; margin: 0; }
+
+  .page-break { page-break-before: always; }
+
+  .tree {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5pt;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 14px 18px;
+    border-radius: 6px;
+    line-height: 1.55;
+    white-space: pre;
+    overflow-x: auto;
+    margin: 0.8rem 0 1.2rem 0;
+  }
+  .tree .dir   { color: #60a5fa; }
+  .tree .file  { color: #e2e8f0; }
+  .tree .cmt   { color: #94a3b8; }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+    color: #94a3b8;
+    font-size: 9pt;
+    text-align: center;
   }
 </style>
 </head>
 <body>
 
-<!-- ============================================ -->
-<!-- COVER PAGE                                   -->
-<!-- ============================================ -->
+<!-- ===================== COVER ===================== -->
 <div class="cover">
-  <div class="cover-icon">T</div>
+  <div class="cover-badge">TECHNICAL DOCUMENT</div>
   <h1>Tokyo Last Train Finder</h1>
-  <p class="cover-sub">도쿄 막차 검색 서비스 기술 문서</p>
-  <div class="cover-meta">
-    <div>Version 1.0</div>
-    <div>2026.03.26</div>
-    <div>Spring Boot 3.4 + React 19 + TypeScript</div>
-    <div>Reverse RAPTOR Algorithm</div>
+  <p class="subtitle">도쿄 수도권 전철망의 막차 경로를 탐색하는 풀스택 웹 애플리케이션 — 시스템 설계 / 데이터 모델 / 배포 파이프라인</p>
+  <div class="meta">
+    <div class="meta-row"><span>Author</span><span>juyeon</span></div>
+    <div class="meta-row"><span>Repository</span><span>jycforest29/tokyo-last-train</span></div>
+    <div class="meta-row"><span>Stack</span><span>Spring Boot 3 · React 19</span></div>
+    <div class="meta-row"><span>Date</span><span>2026-05-03</span></div>
+    <div class="meta-row"><span>Version</span><span>0.0.1-SNAPSHOT</span></div>
   </div>
 </div>
 
-<!-- ============================================ -->
-<!-- TABLE OF CONTENTS                            -->
-<!-- ============================================ -->
+<!-- ===================== TOC ===================== -->
 <div class="toc">
   <h2>목차</h2>
   <ol>
-    <li><a href="#overview">프로젝트 개요</a>
-      <ul class="toc-sub">
-        <li>기술 스택 / 아키텍처 / 데이터 흐름</li>
-      </ul>
-    </li>
-    <li><a href="#algorithm">Reverse RAPTOR 알고리즘</a>
-      <ul class="toc-sub">
-        <li>알고리즘 원리 / 단계별 동작 / 시간복잡도 / 핵심 파라미터</li>
-      </ul>
-    </li>
-    <li><a href="#api">API 설계</a>
-      <ul class="toc-sub">
-        <li>역 검색 API / 막차 검색 API / 에러 처리</li>
-      </ul>
-    </li>
-    <li><a href="#backend">백엔드 상세 설계</a>
-      <ul class="toc-sub">
-        <li>캐시 전략 / 캘린더 해석 / 요금 계산 / 환승 그래프 / CORS</li>
-      </ul>
-    </li>
-    <li><a href="#frontend">프론트엔드 설계 및 목업</a>
-      <ul class="toc-sub">
-        <li>컴포넌트 트리 / 상태 관리 / 자동완성 UX / 디자인 시스템 / 노선 컬러</li>
-      </ul>
-    </li>
-    <li><a href="#test">테스트 문서</a>
-      <ul class="toc-sub">
-        <li>테스트 전략 / 67개 테스트 케이스 상세 / 커버리지 분석</li>
-      </ul>
-    </li>
-    <li><a href="#deploy">배포 및 인프라</a>
-      <ul class="toc-sub">
-        <li>AWS 구성 / 성능 특성 / SEO</li>
-      </ul>
-    </li>
+    <li><span>프로젝트 개요</span><span>p.3</span></li>
+    <li><span>시스템 아키텍처</span><span>p.4</span></li>
+    <li><span>기술 스택</span><span>p.6</span></li>
+    <li><span>프로젝트 구조</span><span>p.7</span></li>
+    <li><span>패키지 · 클래스 설계 근거</span><span>p.9</span></li>
+    <li><span>데이터 모델 (ODPT 엔티티)</span><span>p.11</span></li>
+    <li><span>인메모리 캐시 인덱스 구조</span><span>p.13</span></li>
+    <li><span>핵심 알고리즘: Reverse RAPTOR</span><span>p.15</span></li>
+    <li><span>API 명세</span><span>p.17</span></li>
+    <li><span>배포 파이프라인</span><span>p.18</span></li>
+    <li><span>운영 인프라</span><span>p.20</span></li>
+    <li><span>향후 과제</span><span>p.22</span></li>
   </ol>
 </div>
 
-<!-- ============================================ -->
-<!-- 1. PROJECT OVERVIEW                          -->
-<!-- ============================================ -->
-<div class="section" id="overview">
-<h2>1. 프로젝트 개요</h2>
+<!-- ===================== 1. OVERVIEW ===================== -->
+<section>
+  <h2>1. 프로젝트 개요</h2>
 
-<p>Tokyo Last Train Finder는 도쿄 수도권의 전철/지하철 막차 경로를 실시간으로 검색하는 웹 서비스입니다.
-ODPT(공공교통오픈데이터) API에서 전체 시간표를 캐싱하고, Reverse RAPTOR 알고리즘으로 최적 막차 경로를 탐색합니다.</p>
+  <h3>1.1 목적</h3>
+  <p>
+    Tokyo Last Train Finder는 도쿄 수도권의 지하철 · JR · 사철 노선망을 대상으로,
+    임의의 출발역에서 도착역까지 <strong>가장 늦게 출발할 수 있는 막차 경로</strong>를 탐색해주는
+    풀스택 웹 애플리케이션이다. 직통 경로뿐 아니라 최대 3회 환승까지의 경로를 모두 도출하며,
+    환승 시 도보 이동 시간(5분)과 IC카드 기준 구간 요금까지 함께 계산한다.
+  </p>
 
-<h3>1.1 기술 스택</h3>
-<table>
-  <tr><th>영역</th><th>기술</th><th>버전</th><th>선택 이유</th></tr>
-  <tr><td>백엔드</td><td>Spring Boot</td><td>3.4.4</td><td>프로덕션 레벨 Java 웹 프레임워크</td></tr>
-  <tr><td>언어</td><td>Java</td><td>21</td><td>Record, Pattern Matching 활용</td></tr>
-  <tr><td>HTTP 클라이언트</td><td>WebClient (WebFlux)</td><td>6.2</td><td>대용량 비동기 데이터 수신</td></tr>
-  <tr><td>프론트엔드</td><td>React + TypeScript</td><td>19 + 5.7</td><td>타입 안전성, 컴포넌트 기반 UI</td></tr>
-  <tr><td>빌드</td><td>Vite</td><td>8.0</td><td>빠른 HMR, 프록시 지원</td></tr>
-  <tr><td>데이터</td><td>ODPT API (dump)</td><td>v4</td><td>도쿄 전체 교통 데이터 제공</td></tr>
-</table>
+  <h3>1.2 타깃 사용자</h3>
+  <p>
+    1차 타깃은 <strong>도쿄 권역에서 늦은 시간 귀가하는 일본인 통근자</strong>이며, 일본어 ·
+    영어 · 한국어 3개 언어로 자동완성과 UI를 제공한다.
+    역명 검색은 일본어(한자/히라가나), 영어 로마자, 한국어 별칭(별도 사전) 모두로 가능하다.
+  </p>
 
-<h3>1.2 시스템 아키텍처</h3>
-<div class="diagram">
-<pre style="background:none;border:none;text-align:left;padding:0;margin:0;">
-┌─────────────┐      ┌──────────────────────────────────────────┐
-│   Browser    │      │              Spring Boot                  │
-│  (React UI)  │─────▶│                                          │
-│  port 3000   │ /api │  Controller ──▶ Service ──▶ RAPTOR Engine│
-└─────────────┘      │       │                         │         │
-                     │       ▼                         ▼         │
-                     │  TransitDataCache ◀── ODPT Dump API       │
-                     │  (In-Memory)         (startup 시 1회)      │
-                     │  ┌─────────────────────────────────┐      │
-                     │  │ stations, railways, timetables,  │      │
-                     │  │ fares, transfers, name index     │      │
-                     │  └─────────────────────────────────┘      │
-                     └──────────────────────────────────────────┘
-</pre>
+  <h3>1.3 핵심 기능</h3>
+  <ul>
+    <li><strong>막차 경로 탐색</strong> — 직통 ~ 3회 환승, 가장 늦은 출발 시각 우선 정렬</li>
+    <li><strong>역 자동완성</strong> — 300ms 디바운스 + AbortController 적용, 다국어 인덱스 검색</li>
+    <li><strong>상세 경로 정보</strong> — 출발/도착 시각, 노선, 열차 종별, 환승역, 도보 시간</li>
+    <li><strong>요금 계산</strong> — IC카드 우선, 사업자 변경 시 구간별 합산</li>
+    <li><strong>캘린더 자동 판별</strong> — 평일 / 토요일 / 공휴일 시간표를 날짜 기반으로 자동 선택, Fallback 포함</li>
+  </ul>
+</section>
+
+<!-- ===================== 2. ARCHITECTURE ===================== -->
+<section class="page-break">
+  <h2>2. 시스템 아키텍처</h2>
+
+  <p>
+    아래 다이어그램은 개발자 커밋부터 일본인 사용자에게 응답이 전달되기까지의 전체 흐름이다.
+    Jenkins(로컬 Docker)가 GitHub에서 코드를 받아 빌드하고, AWS EC2(도쿄 리전)로 배포한다.
+    EC2 안에서는 Nginx가 정적 파일과 API 프록시를 담당하고, Spring Boot 앱이
+    <strong>인메모리 캐시</strong>에 ODPT API 데이터를 통째로 올려두고 응답한다 — 별도의 RDB는 사용하지 않는다.
+  </p>
+
+  <div class="arch-figure">
+    <svg viewBox="0 0 920 560" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans KR', sans-serif" font-size="11">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+        </marker>
+        <marker id="arrowOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#f97316"/>
+        </marker>
+        <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981"/>
+        </marker>
+        <linearGradient id="ec2Gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#fff7ed"/>
+          <stop offset="100%" stop-color="#ffedd5"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Title -->
+      <text x="460" y="22" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">tokyo-last-train 서버 구조도</text>
+
+      <!-- Developer (laptop) -->
+      <g transform="translate(40,70)">
+        <rect width="110" height="60" rx="8" fill="#fff" stroke="#1e293b" stroke-width="1.5"/>
+        <text x="55" y="22" text-anchor="middle" font-weight="600">💻 IntelliJ</text>
+        <text x="55" y="42" text-anchor="middle" font-size="9" fill="#64748b">Local Dev</text>
+      </g>
+
+      <!-- GitHub -->
+      <g transform="translate(220,70)">
+        <rect width="110" height="60" rx="8" fill="#0f172a" stroke="#0f172a"/>
+        <text x="55" y="26" text-anchor="middle" fill="#fff" font-weight="600">🐙 GitHub</text>
+        <text x="55" y="44" text-anchor="middle" font-size="9" fill="#cbd5e1">jycforest29/tokyo-last-train</text>
+      </g>
+
+      <!-- Jenkins (local) -->
+      <g transform="translate(220,180)">
+        <rect width="110" height="70" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+        <text x="55" y="24" text-anchor="middle" font-weight="600" fill="#92400e">🤵 Jenkins</text>
+        <text x="55" y="42" text-anchor="middle" font-size="9" fill="#92400e">localhost:8090</text>
+        <text x="55" y="56" text-anchor="middle" font-size="9" fill="#92400e">(Docker, LTS)</text>
+      </g>
+
+      <!-- Build steps -->
+      <g transform="translate(40,180)">
+        <rect width="140" height="70" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="4 3"/>
+        <text x="70" y="22" text-anchor="middle" font-size="9" font-weight="600" fill="#475569">파이프라인 단계</text>
+        <text x="70" y="38" text-anchor="middle" font-size="8.5" fill="#475569">npm ci · vite build</text>
+        <text x="70" y="50" text-anchor="middle" font-size="8.5" fill="#475569">mvn package · scp</text>
+        <text x="70" y="62" text-anchor="middle" font-size="8.5" fill="#475569">deploy.sh</text>
+      </g>
+
+      <!-- EC2 box -->
+      <g transform="translate(380,160)">
+        <rect width="500" height="290" rx="10" fill="url(#ec2Gradient)" stroke="#f97316" stroke-width="2"/>
+        <text x="14" y="22" font-size="10" font-weight="700" fill="#9a3412">☁️ AWS EC2 — Amazon Linux 2023, t3.small (ap-northeast-1, 도쿄)</text>
+
+        <!-- systemd unit label -->
+        <text x="14" y="40" font-size="8.5" fill="#9a3412">systemd: tokyo-last-train.service · JVM Xmx 2g · Asia/Tokyo</text>
+
+        <!-- User -->
+        <g transform="translate(420,80)">
+          <circle cx="30" cy="20" r="22" fill="#fff" stroke="#475569"/>
+          <text x="30" y="24" text-anchor="middle" font-size="14">🧑‍💼</text>
+          <text x="30" y="62" text-anchor="middle" font-size="9" fill="#334155">Tokyo User</text>
+        </g>
+
+        <!-- Nginx -->
+        <g transform="translate(20,90)">
+          <rect width="120" height="60" rx="6" fill="#fff" stroke="#10b981" stroke-width="1.5"/>
+          <text x="60" y="22" text-anchor="middle" font-weight="600" fill="#047857">🌐 Nginx</text>
+          <text x="60" y="40" text-anchor="middle" font-size="9" fill="#047857">:80 (→ :443 예정)</text>
+          <text x="60" y="52" text-anchor="middle" font-size="8.5" fill="#475569">SPA + /api proxy</text>
+        </g>
+
+        <!-- Static files -->
+        <g transform="translate(20,170)">
+          <rect width="120" height="50" rx="6" fill="#fff" stroke="#94a3b8"/>
+          <text x="60" y="20" text-anchor="middle" font-size="9.5" font-weight="600" fill="#334155">📁 /var/www/...</text>
+          <text x="60" y="36" text-anchor="middle" font-size="8.5" fill="#64748b">React dist (SPA)</text>
+        </g>
+
+        <!-- Spring Boot -->
+        <g transform="translate(170,90)">
+          <rect width="140" height="60" rx="6" fill="#fff" stroke="#6366f1" stroke-width="1.5"/>
+          <text x="70" y="22" text-anchor="middle" font-weight="600" fill="#4338ca">🌱 Spring Boot 3</text>
+          <text x="70" y="40" text-anchor="middle" font-size="9" fill="#4338ca">:8080 (Java 21)</text>
+          <text x="70" y="52" text-anchor="middle" font-size="8.5" fill="#475569">app.jar (systemd)</text>
+        </g>
+
+        <!-- Reverse RAPTOR -->
+        <g transform="translate(170,170)">
+          <rect width="140" height="50" rx="6" fill="#fff" stroke="#94a3b8"/>
+          <text x="70" y="20" text-anchor="middle" font-size="9.5" font-weight="600" fill="#334155">⚙️ ReverseRaptorEngine</text>
+          <text x="70" y="36" text-anchor="middle" font-size="8.5" fill="#64748b">Round 0~3 backward scan</text>
+        </g>
+
+        <!-- TransitDataCache -->
+        <g transform="translate(340,90)">
+          <rect width="140" height="130" rx="6" fill="#fff" stroke="#0891b2" stroke-width="1.5"/>
+          <text x="70" y="22" text-anchor="middle" font-weight="600" fill="#155e75">🧠 TransitDataCache</text>
+          <text x="70" y="38" text-anchor="middle" font-size="9" fill="#155e75">In-Memory (heap)</text>
+          <line x1="10" y1="46" x2="130" y2="46" stroke="#cbd5e1"/>
+          <text x="14" y="60" font-size="8.5" fill="#475569">stationsById</text>
+          <text x="14" y="74" font-size="8.5" fill="#475569">trainTimetables</text>
+          <text x="14" y="88" font-size="8.5" fill="#475569">nameIndex</text>
+          <text x="14" y="102" font-size="8.5" fill="#475569">transferGraph</text>
+          <text x="14" y="116" font-size="8.5" fill="#475569">fares · calendars</text>
+        </g>
+
+        <!-- Actuator -->
+        <g transform="translate(20,240)">
+          <rect width="290" height="34" rx="4" fill="#ecfdf5" stroke="#10b981" stroke-dasharray="3 2"/>
+          <text x="165" y="21" text-anchor="middle" font-size="8.5" fill="#047857">/actuator/health (localhost only) — deploy.sh가 UP 확인 후 종료</text>
+        </g>
+      </g>
+
+      <!-- ODPT API (external) -->
+      <g transform="translate(380,490)">
+        <rect width="500" height="50" rx="8" fill="#1e1b4b" stroke="#1e1b4b"/>
+        <text x="250" y="22" text-anchor="middle" fill="#fff" font-weight="600">🚆 ODPT API v4 — api.odpt.org</text>
+        <text x="250" y="40" text-anchor="middle" fill="#a5b4fc" font-size="9">Dump endpoints: Station · Railway · TrainTimetable · StationTimetable · Calendar · TrainType · RailwayFare</text>
+      </g>
+
+      <!-- ARROWS -->
+      <!-- IDE → GitHub -->
+      <line x1="150" y1="100" x2="220" y2="100" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="185" y="92" text-anchor="middle" font-size="8.5" fill="#475569">git push</text>
+
+      <!-- GitHub → Jenkins (webhook polling 대체로 'pull') -->
+      <line x1="275" y1="130" x2="275" y2="180" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="345" y="160" text-anchor="middle" font-size="8.5" fill="#475569">checkout scm</text>
+
+      <!-- Jenkins → EC2 (deploy) -->
+      <path d="M 330 215 Q 360 215 380 230" stroke="#f97316" stroke-width="2" fill="none" marker-end="url(#arrowOrange)"/>
+      <text x="370" y="206" text-anchor="middle" font-size="8.5" fill="#c2410c" font-weight="600">SCP + SSH deploy.sh</text>
+
+      <!-- Nginx → Spring Boot -->
+      <line x1="520" y1="280" x2="550" y2="280" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="535" y="272" text-anchor="middle" font-size="8.5" fill="#475569">/api/*</text>
+
+      <!-- Nginx → static -->
+      <line x1="460" y1="350" x2="460" y2="330" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+
+      <!-- Spring → Cache -->
+      <line x1="650" y1="280" x2="720" y2="280" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="685" y="272" text-anchor="middle" font-size="8.5" fill="#475569">read</text>
+
+      <!-- RAPTOR → Cache -->
+      <line x1="650" y1="365" x2="720" y2="335" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+      <!-- Spring → ODPT (boot-time) -->
+      <path d="M 600 300 L 600 470 L 600 490" stroke="#10b981" stroke-width="2" fill="none" stroke-dasharray="4 3" marker-end="url(#arrowGreen)"/>
+      <text x="610" y="475" font-size="8.5" fill="#047857" font-weight="600">@PostConstruct: dump fetch (2~3분)</text>
+
+      <!-- User → Nginx -->
+      <line x1="845" y1="180" x2="500" y2="280" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="700" y="220" font-size="8.5" fill="#475569">HTTPS (planned)</text>
+    </svg>
+    <div class="caption">그림 2-1. 빌드 → 배포 → 런타임 전체 흐름. Jenkins는 사용자 로컬 노트북의 Docker 컨테이너로 동작하며, 빌드 결과를 EC2로 SCP/SSH 전송한다.</div>
+  </div>
+
+  <h3>2.1 의도적으로 채택하지 않은 컴포넌트</h3>
+  <p>
+    의외로 보일 수 있어 명시한다 — 이 시스템은 다음을 <strong>의도적으로 사용하지 않는다</strong>.
+  </p>
+  <ul>
+    <li><strong>RDB / NoSQL</strong> — ODPT 데이터는 하루 단위로도 거의 변하지 않고 전체 크기가 JVM 힙에 들어가므로, DB 도입은 운영 복잡도만 늘린다. 대신 <code>TransitDataCache</code>가 7개 인덱스를 <code>ConcurrentHashMap</code>으로 유지한다.</li>
+    <li><strong>Redis 등 외부 캐시</strong> — 단일 인스턴스 + 인메모리로 충분. 분산이 필요해지면 그때 도입한다.</li>
+    <li><strong>로그인 / 사용자 데이터</strong> — 막차 검색은 anonymous 단발 조회이므로 인증 계층이 불필요.</li>
+    <li><strong>로드 밸런서</strong> — 단일 EC2 인스턴스로 충분한 트래픽 규모.</li>
+  </ul>
+  <div class="callout">
+    <strong>설계 원칙.</strong> "데이터는 변하지 않고 전체가 작다"는 도메인 특성을 살려서, 일반적인 백엔드의 DB 계층을 통째로 인메모리 캐시로 대체했다. 그 결과 응답 지연이 ms 단위가 되고, ODPT API에 매 요청마다 의존하지 않게 된다.
+  </div>
+</section>
+
+<!-- ===================== 3. TECH STACK ===================== -->
+<section class="page-break">
+  <h2>3. 기술 스택</h2>
+
+  <table>
+    <thead>
+      <tr><th style="width:18%">계층</th><th style="width:30%">선택 기술</th><th>선택 근거</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Backend</strong></td>
+        <td>Java 21, Spring Boot 3.4.4</td>
+        <td>Record, Pattern matching, virtual threads 등 최신 언어 기능 활용. LTS.</td>
+      </tr>
+      <tr>
+        <td><strong>HTTP Client</strong></td>
+        <td>Spring WebFlux (WebClient) + Reactor Netty</td>
+        <td>ODPT Dump API는 단일 응답이 큰 JSON 파일(수백 MB). 256MB 버퍼 / 3분 read timeout 설정이 필요해서 RestTemplate보다 WebClient 채택.</td>
+      </tr>
+      <tr>
+        <td><strong>Frontend</strong></td>
+        <td>React 19, TypeScript 5.9, Vite</td>
+        <td>최신 React. Vite는 dev 서버 + API proxy(<code>/api → :8080</code>)로 백엔드 통합 개발 편의 제공.</td>
+      </tr>
+      <tr>
+        <td><strong>JSON</strong></td>
+        <td>Jackson + Java Records + <code>@JsonProperty</code></td>
+        <td>ODPT는 RDF 표기(<code>owl:sameAs</code>, <code>dc:title</code>, <code>geo:lat</code>)를 사용. Record + 필드별 어노테이션으로 깔끔하게 매핑.</td>
+      </tr>
+      <tr>
+        <td><strong>Health</strong></td>
+        <td>Spring Boot Actuator</td>
+        <td><code>/actuator/health</code>는 캐시 로딩 완료 여부를 함께 반환(<code>CacheHealthIndicator</code>). deploy.sh가 이걸 polling 해서 UP될 때까지 대기.</td>
+      </tr>
+      <tr>
+        <td><strong>Build</strong></td>
+        <td>Maven (백엔드), npm + Vite (프론트)</td>
+        <td>Jenkinsfile에서 두 빌드를 차례로 실행 후 <code>frontend/dist/*</code>를 <code>src/main/resources/static/</code>으로 복사 — 단일 jar로 패키징.</td>
+      </tr>
+      <tr>
+        <td><strong>Deploy</strong></td>
+        <td>Jenkins (Docker, 로컬) → SCP/SSH → EC2</td>
+        <td>GitHub Actions 대신 Jenkins를 선택한 이유: 사용자가 Jenkinsfile 기반 파이프라인을 학습하고자 함. Jenkins를 클라우드에 두지 않고 로컬 노트북에 둬서 비용 0.</td>
+      </tr>
+      <tr>
+        <td><strong>Runtime</strong></td>
+        <td>EC2 (Amazon Linux 2023, t3.small) + systemd + Nginx</td>
+        <td>도쿄 리전(ap-northeast-1)으로 일본 사용자 레이턴시 최소화. systemd로 OOM/장애 시 자동 재시작.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===================== 4. PROJECT STRUCTURE ===================== -->
+<section class="page-break">
+  <h2>4. 프로젝트 구조</h2>
+
+  <div class="tree"><span class="dir">tokyo-last-train/</span>
+├── <span class="dir">src/main/java/tokyo/lasttrain/</span>
+│   ├── <span class="dir">controller/</span>                <span class="cmt"># REST 진입점</span>
+│   │   ├── <span class="file">StationController.java</span>      <span class="cmt"># GET /api/v1/stations/search</span>
+│   │   └── <span class="file">LastTrainController.java</span>    <span class="cmt"># GET /api/v1/last-train</span>
+│   ├── <span class="dir">service/</span>                   <span class="cmt"># 인터페이스</span>
+│   │   ├── <span class="file">StationSearchService.java</span>
+│   │   ├── <span class="file">LastTrainService.java</span>
+│   │   └── <span class="dir">impl/</span>                  <span class="cmt"># 구현체</span>
+│   │       ├── <span class="file">StationSearchServiceImpl.java</span>
+│   │       ├── <span class="file">LastTrainServiceImpl.java</span> <span class="cmt"># 캘린더 해석/요금 계산/DTO 변환</span>
+│   │       └── <span class="file">ReverseRaptorEngine.java</span>  <span class="cmt"># 핵심 경로 탐색</span>
+│   ├── <span class="dir">model/</span>                     <span class="cmt"># ODPT JSON ↔ Java Record</span>
+│   │   ├── <span class="file">OdptStation.java</span>
+│   │   ├── <span class="file">OdptRailway.java</span>
+│   │   ├── <span class="file">OdptTrainTimetable.java</span>
+│   │   ├── <span class="file">OdptStationTimetable.java</span>
+│   │   ├── <span class="file">OdptRailwayFare.java</span>
+│   │   ├── <span class="file">OdptTrainType.java</span>
+│   │   └── <span class="file">OdptCalendar.java</span>
+│   ├── <span class="dir">dto/</span>                       <span class="cmt"># API 응답 전용 객체</span>
+│   │   ├── <span class="file">StationSearchResponse.java</span>
+│   │   └── <span class="file">LastTrainResponse.java</span>
+│   ├── <span class="dir">cache/</span>                     <span class="cmt"># 인메모리 데이터 계층</span>
+│   │   ├── <span class="file">TransitDataCache.java</span>       <span class="cmt"># 9개 인덱스 + @PostConstruct 빌더</span>
+│   │   ├── <span class="file">TransitDataRefreshScheduler.java</span> <span class="cmt"># 주기 갱신</span>
+│   │   └── <span class="file">KoreanAliasDictionary.java</span>  <span class="cmt"># 한국어 별칭 사전</span>
+│   ├── <span class="dir">client/</span>                    <span class="cmt"># 외부 API 어댑터</span>
+│   │   └── <span class="file">OdptApiClient.java</span>          <span class="cmt"># Dump/Filter API 래퍼</span>
+│   ├── <span class="dir">config/</span>                    <span class="cmt"># Spring Bean 설정</span>
+│   │   ├── <span class="file">AppConfig.java</span>              <span class="cmt"># WebClient 빈 (256MB 버퍼)</span>
+│   │   ├── <span class="file">OdptApiProperties.java</span>      <span class="cmt"># @ConfigurationProperties</span>
+│   │   └── <span class="file">WebConfig.java</span>              <span class="cmt"># CORS</span>
+│   ├── <span class="dir">health/</span>
+│   │   └── <span class="file">CacheHealthIndicator.java</span>   <span class="cmt"># 캐시 ready 여부 → /actuator/health</span>
+│   └── <span class="file">LastTrainApplication.java</span>
+│
+├── <span class="dir">src/main/resources/</span>
+│   └── <span class="file">application.yml</span>                 <span class="cmt"># 포트, ODPT base URL, 컨슈머 키</span>
+│
+├── <span class="dir">src/test/java/tokyo/lasttrain/</span>
+│   ├── <span class="dir">cache/</span>      <span class="cmt"># 캐시 빌더/한국어 사전 단위 테스트</span>
+│   ├── <span class="dir">controller/</span> <span class="cmt"># MockMvc 기반</span>
+│   └── <span class="dir">service/</span>    <span class="cmt"># RAPTOR 엔진 시나리오 테스트</span>
+│
+├── <span class="dir">frontend/src/</span>
+│   ├── <span class="file">App.tsx</span>                         <span class="cmt"># 메인 레이아웃</span>
+│   ├── <span class="file">types.ts</span>                        <span class="cmt"># API 응답 타입</span>
+│   ├── <span class="dir">components/</span> <span class="cmt"># SearchForm, StationInput, RouteCard, TransferStep, ...</span>
+│   ├── <span class="dir">hooks/</span>      <span class="cmt"># useStationSearch (debounce + AbortController)</span>
+│   ├── <span class="dir">i18n/</span>       <span class="cmt"># ja/en/ko 3개 언어, LanguageContext</span>
+│   ├── <span class="dir">api/</span>        <span class="cmt"># fetch wrapper</span>
+│   └── <span class="dir">utils/</span>      <span class="cmt"># debounce, format</span>
+│
+├── <span class="dir">scripts/</span>
+│   ├── <span class="file">ec2-setup.sh</span>          <span class="cmt"># EC2 최초 1회 셋업 (Java 21, Nginx, systemd)</span>
+│   ├── <span class="file">deploy.sh</span>             <span class="cmt"># JAR 교체 + restart + actuator polling</span>
+│   └── <span class="file">enable-https.sh</span>       <span class="cmt"># Let's Encrypt</span>
+│
+├── <span class="file">Jenkinsfile</span>                  <span class="cmt"># CI/CD 파이프라인 정의</span>
+├── <span class="file">pom.xml</span>
+├── <span class="file">README.md</span>
+└── <span class="file">docs/technical-document.html</span> <span class="cmt"># 본 문서</span>
 </div>
+</section>
 
-<h3>1.3 데이터 흐름</h3>
-<ol>
-  <li><strong>서버 시작</strong>: <code>@PostConstruct</code>에서 ODPT dump API로 전체 데이터 로딩 (30~180초)</li>
-  <li><strong>인덱스 구축</strong>: 역명 검색 인덱스, 역별 시간표 인덱스, 환승 그래프 생성</li>
-  <li><strong>사용자 검색</strong>: 역명 입력 → 자동완성 → 출발/도착역 선택</li>
-  <li><strong>경로 탐색</strong>: Reverse RAPTOR로 최적 막차 경로 탐색 (50~500ms)</li>
-  <li><strong>응답</strong>: 경로, 환승 정보, 요금을 JSON으로 반환</li>
-</ol>
+<!-- ===================== 5. PACKAGE / CLASS RATIONALE ===================== -->
+<section class="page-break">
+  <h2>5. 패키지 · 클래스 설계 근거</h2>
 
-<h3>1.4 프로젝트 통계</h3>
-<table>
-  <tr><th>영역</th><th>파일 수</th><th>라인 수</th></tr>
-  <tr><td>백엔드 (서비스/알고리즘)</td><td>3</td><td>526</td></tr>
-  <tr><td>백엔드 (캐시/인덱스)</td><td>1</td><td>333</td></tr>
-  <tr><td>백엔드 (컨트롤러)</td><td>2</td><td>63</td></tr>
-  <tr><td>백엔드 (모델/DTO)</td><td>9</td><td>213</td></tr>
-  <tr><td>프론트엔드 (컴포넌트/훅)</td><td>13</td><td>804</td></tr>
-  <tr><td>프론트엔드 (CSS)</td><td>8</td><td>618</td></tr>
-  <tr><td>테스트</td><td>6</td><td>1,398</td></tr>
-  <tr><td><strong>합계</strong></td><td><strong>42</strong></td><td><strong>~3,955</strong></td></tr>
-</table>
-</div>
+  <p>
+    "왜 이렇게 나눴는가"를 패키지별로 정리한다. 일반적인 Spring 레이어 분리에서 파생된 구조이지만,
+    이 프로젝트 특유의 결정(<code>service</code>와 <code>service.impl</code> 분리, <code>model</code>과 <code>dto</code> 분리,
+    <code>cache</code> 패키지 별도화 등)에 대한 이유를 명시한다.
+  </p>
 
-<!-- ============================================ -->
-<!-- 2. ALGORITHM                                 -->
-<!-- ============================================ -->
-<div class="section" id="algorithm">
-<h2>2. Reverse RAPTOR 알고리즘</h2>
+  <h3>5.1 controller — 얇게 유지</h3>
+  <p>
+    컨트롤러는 HTTP 진입점만 담당하고, 모든 도메인 로직은 service로 위임한다. 두 컨트롤러 모두
+    30줄 이내이며 검증/쿼리 파라미터 추출만 한다. 응답은 <code>DTO</code>로 직렬화되어 나간다.
+  </p>
 
-<h3>2.1 왜 Reverse RAPTOR인가?</h3>
-<p>일반적인 경로 탐색(Dijkstra, A*)은 <strong>"최단 시간"</strong>을 찾습니다. 하지만 막차 문제는 <strong>"가장 늦게 출발해서 도착할 수 있는 경로"</strong>를 찾아야 합니다. 이를 위해 RAPTOR(Round-bAsed Public Transit Optimized Router) 알고리즘을 역방향으로 적용합니다.</p>
+  <h3>5.2 service / service.impl — 인터페이스 분리</h3>
+  <p>
+    <code>StationSearchService</code>, <code>LastTrainService</code>는 인터페이스이고 구현은
+    <code>service.impl</code> 패키지에 둔다. 분리한 이유:
+  </p>
+  <ul>
+    <li><strong>테스트 시 mock 구현체 주입 용이</strong> — 컨트롤러 단위 테스트에서 인터페이스 기반으로 stubbing.</li>
+    <li><strong>구현 교체 가능성 확보</strong> — 예를 들어 향후 RAPTOR 대신 다른 알고리즘을 시험할 때 인터페이스만 유지하면 된다.</li>
+    <li><strong>패키지 가시성 관리</strong> — <code>ReverseRaptorEngine</code>은 외부에서 직접 호출하지 않고 <code>LastTrainServiceImpl</code>이 위임하는 내부 컴포넌트. <code>impl</code> 안에 둠으로써 응집도 표현.</li>
+  </ul>
 
-<div class="callout">
-  <strong>핵심 아이디어:</strong> 도착역에서 출발하여 거꾸로 탐색합니다. "이 역에서 도착역까지 갈 수 있는 가장 늦은 출발 시각"을 각 역마다 갱신해 나갑니다.
-</div>
+  <h3>5.3 model vs dto — 입력 객체와 출력 객체의 분리</h3>
+  <div class="grid-2">
+    <div class="card">
+      <h4>model/</h4>
+      <p><strong>외부에서 들어온 데이터의 형태.</strong> ODPT API JSON을 그대로 매핑하는 Java Record. RDF 표기(<code>owl:sameAs</code>, <code>dc:title</code>, <code>geo:lat</code>)를 그대로 받는 것이 목적이라 필드명이 ODPT 스키마에 종속.</p>
+    </div>
+    <div class="card">
+      <h4>dto/</h4>
+      <p><strong>외부로 나가는 데이터의 형태.</strong> 프론트엔드가 다루기 좋은 평탄화된 구조. 다국어 이름(ja/en/ko)을 한 객체에 모아두고, 환승 정보를 별도 객체로 추출한다.</p>
+    </div>
+  </div>
+  <p>
+    이 분리는 "외부 API 변경이 우리 응답 스키마에 새지 않도록"이라는 안티-부패 계층(anti-corruption layer)
+    역할을 한다. ODPT가 필드명을 바꾸면 <code>model/</code>만 수정하면 되고, 프론트엔드 응답은 그대로 유지된다.
+  </p>
 
-<h3>2.2 알고리즘 단계별 동작</h3>
+  <h3>5.4 cache — DB 대체 계층</h3>
+  <p>
+    <code>TransitDataCache</code>는 단순한 캐시가 아니라 이 프로젝트의 <strong>데이터 계층 그 자체</strong>다.
+    일반 백엔드의 Repository / DAO에 해당하는 역할을 한다. 그래서 <code>service</code>나
+    <code>repository</code> 패키지에 두지 않고 별도 <code>cache</code> 패키지를 만들어 책임을 명확히 표시했다.
+    내부에 9개의 <code>ConcurrentHashMap</code> 인덱스(7장에서 상세)와 그것을 빌드하는 메서드를 가진다.
+  </p>
 
-<h4>초기화</h4>
-<pre><code>bestByStation[도착역] = (23:59, 빈 여정)
-markedStations = {도착역}</code></pre>
+  <h3>5.5 client — 외부 시스템 어댑터</h3>
+  <p>
+    <code>OdptApiClient</code>는 ODPT API와 통신하는 유일한 클래스. 다른 모든 코드는 <code>cache</code>를
+    경유하며, ODPT API에 직접 의존하는 부분은 이 한 클래스로 한정된다. 이렇게 함으로써 ODPT가 점검 중이거나
+    API 명세가 바뀔 때 <code>OdptApiClient</code>와 <code>model/</code>만 손대면 된다.
+  </p>
 
-<h4>메인 루프 (최대 4라운드 = 최대 3회 환승)</h4>
+  <h3>5.6 config — Bean 정의의 단일 위치</h3>
+  <ul>
+    <li><strong>AppConfig</strong> — <code>WebClient</code> 빈을 정의 (메모리 256MB, connect 30s, read 3min, redirect follow).</li>
+    <li><strong>OdptApiProperties</strong> — <code>application.yml</code>의 <code>odpt.api.*</code>를 타입 안전하게 바인딩.</li>
+    <li><strong>WebConfig</strong> — CORS 정책 (개발 시 Vite dev 서버:3000 허용).</li>
+  </ul>
+  <p>
+    빈 정의를 산발시키지 않고 <code>config/</code>에 모아두면 의존성/설정의 변화 지점을 한 패키지에서 찾을 수 있다.
+  </p>
 
-<p><strong>Phase 1: 열차 역방향 스캔</strong></p>
-<ol>
-  <li>marked된 각 역에 대해, 해당 역을 지나는 모든 열차 시간표 조회</li>
-  <li>각 열차에서 해당 역 이전의 모든 정차역에 대해:</li>
-  <li>출발 시각이 현재 best보다 늦으면 갱신</li>
-  <li>새로운 Leg(탑승 구간)를 생성하여 여정에 추가</li>
-</ol>
+  <h3>5.7 health — 운영 가시성</h3>
+  <p>
+    <code>CacheHealthIndicator</code>는 <code>TransitDataCache.isReady()</code>를 <code>/actuator/health</code>의
+    응답에 반영한다. 부팅 후 ODPT 데이터를 모두 받아오기까지 약 2~3분이 걸리는데, 그 사이에 트래픽이 들어오면
+    안 되기 때문에 <code>deploy.sh</code>가 health UP을 polling 해서 무중단 배포의 신호로 사용한다.
+  </p>
+</section>
 
-<pre><code>// 예시: C역이 marked, 열차 A(23:30)→B(23:45)→C(00:00)
-// → A역의 best를 23:30으로, B역의 best를 23:45로 갱신
-for (각 열차 in C역을 지나는 열차들) {
-    arrivalAtC = 열차의 C역 도착시각;
-    if (arrivalAtC > bestByStation[C].latestDeparture) continue; // 탑승 불가
+<!-- ===================== 6. DATA MODEL (ODPT entities) ===================== -->
+<section class="page-break">
+  <h2>6. 데이터 모델 (ODPT 엔티티)</h2>
 
-    for (C역 이전의 각 정차역 S) {
-        depTime = 열차의 S역 출발시각;
-        if (depTime > bestByStation[S].latestDeparture) {
-            bestByStation[S] = (depTime, S→C Leg + 기존여정);
-            newMarked.add(S);
-        }
-    }
+  <p>
+    이 프로젝트는 RDB 테이블을 가지지 않는다. 대신 ODPT API에서 받아오는 7종의 엔티티를
+    Java <code>record</code>로 매핑하고, 이를 인메모리 인덱스에 적재한다. 본 절은 그 7개 엔티티의
+    필드 명세이며, 다음 7장은 인덱스 구조다.
+  </p>
+
+  <h3>6.1 OdptStation — 역</h3>
+  <table>
+    <thead><tr><th>필드</th><th>JSON 키</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td><code>owl:sameAs</code></td><td>역 고유 ID. 예: <code>odpt.Station:TokyoMetro.Ginza.Shibuya</code></td></tr>
+      <tr><td><code>title</code></td><td><code>dc:title</code></td><td>일본어 표기 (e.g. 渋谷)</td></tr>
+      <tr><td><code>stationTitle</code></td><td><code>odpt:stationTitle</code></td><td><code>{ja, en}</code> 다국어 맵</td></tr>
+      <tr><td><code>operator</code></td><td><code>odpt:operator</code></td><td>운영 사업자 ID</td></tr>
+      <tr><td><code>railway</code></td><td><code>odpt:railway</code></td><td>소속 노선 ID</td></tr>
+      <tr><td><code>stationCode</code></td><td><code>odpt:stationCode</code></td><td>역 코드 (e.g. G-01)</td></tr>
+      <tr><td><code>latitude</code></td><td><code>geo:lat</code></td><td>위도</td></tr>
+      <tr><td><code>longitude</code></td><td><code>geo:long</code></td><td>경도</td></tr>
+      <tr><td><code>connectingRailway</code></td><td><code>odpt:connectingRailway</code></td><td>환승 가능 노선 ID 목록</td></tr>
+      <tr><td><code>connectingStation</code></td><td><code>odpt:connectingStation</code></td><td>환승 가능 역 ID 목록 (transferGraph의 1차 소스)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>6.2 OdptRailway — 노선</h3>
+  <table>
+    <thead><tr><th>필드</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>id, title, railwayTitle</code></td><td>노선 ID, 일본어 표기, 다국어 맵</td></tr>
+      <tr><td><code>operator, lineCode, color</code></td><td>운영자, 노선 코드(e.g. G), 색상</td></tr>
+      <tr><td><code>stationOrder</code></td><td>역 순서 배열 (<code>{index, station}</code>) — <code>railwayStationOrder</code> 인덱스의 소스</td></tr>
+    </tbody>
+  </table>
+
+  <h3>6.3 OdptTrainTimetable — 열차 시간표 (가장 중요)</h3>
+  <p>
+    한 대의 열차가 출발역에서 종점까지 정차하는 모든 역과 시각을 담은 객체. RAPTOR의 핵심 입력.
+  </p>
+  <table>
+    <thead><tr><th>필드</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td>고유 ID (e.g. <code>odpt.TrainTimetable:TokyoMetro.Ginza.A1234</code>)</td></tr>
+      <tr><td><code>railway</code></td><td>운행 노선 ID</td></tr>
+      <tr><td><code>railDirection</code></td><td>방향 ID (상행/하행)</td></tr>
+      <tr><td><code>calendar</code></td><td>운행 캘린더 ID (Weekday/SaturdayHoliday/Holiday)</td></tr>
+      <tr><td><code>trainNumber</code></td><td>열차 번호</td></tr>
+      <tr><td><code>trainType</code></td><td>열차 종별 ID (각정/쾌속/특급 등)</td></tr>
+      <tr><td><code>originStation, destinationStation</code></td><td>시발역, 종점역</td></tr>
+      <tr><td><code>stops</code></td><td><strong>핵심.</strong> <code>List&lt;TrainStop&gt;</code> — 정차역마다 <code>departureTime</code>, <code>arrivalTime</code>, <code>platformNumber</code>를 가진다.</td></tr>
+    </tbody>
+  </table>
+  <p>
+    <code>TrainStop</code>은 출발/도착 시각이 둘 다 있는 경우(중간역) / 하나만 있는 경우(시발/종점) 모두 처리해야 하므로,
+    Record 안에 <code>effectiveTime()</code>, <code>effectiveStation()</code> 메서드를 두어 추상화한다.
+  </p>
+
+  <h3>6.4 OdptStationTimetable — 역 기준 시간표</h3>
+  <p>
+    특정 역에서 특정 방향, 특정 캘린더에 출발하는 모든 열차를 모아둔 객체. RAPTOR에서는 거의 사용하지 않고,
+    역별 디스플레이 용도. <code>(stationId, railDirection, calendarId)</code>로 식별.
+  </p>
+
+  <h3>6.5 OdptCalendar — 운행 캘린더</h3>
+  <p>
+    <code>Weekday</code>, <code>SaturdayHoliday</code>, <code>Holiday</code> 등 미리 정의된 캘린더와,
+    특정 날짜를 명시적으로 매핑하는 <code>days</code> 배열. <code>resolveCalendar(LocalDate)</code>는
+    days 매칭을 우선하고, 없으면 요일 기반으로 fall through.
+  </p>
+
+  <h3>6.6 OdptRailwayFare — 구간 요금</h3>
+  <p>
+    <code>(fromStation, toStation)</code> 쌍에 대한 IC카드 요금 / 종이 티켓 요금 / 어린이 요금. <code>icCardFare</code>를 우선 사용하고, 없으면 <code>ticketFare</code>로 fallback.
+  </p>
+
+  <h3>6.7 OdptTrainType — 열차 종별</h3>
+  <p>
+    각 정거(Local), 쾌속(Rapid), 특급(Express) 등 종별 분류. ID와 다국어 표기 맵을 가진다.
+  </p>
+</section>
+
+<!-- ===================== 7. CACHE INDICES ===================== -->
+<section class="page-break">
+  <h2>7. 인메모리 캐시 인덱스 구조</h2>
+
+  <p>
+    <code>TransitDataCache</code>는 위 7개 엔티티를 <strong>9개의 인덱스</strong>로 변형하여 보관한다.
+    이 인덱스들이 RDB의 인덱스/조인을 대체하며, 모든 조회는 O(1) 또는 O(log n)으로 수행된다.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>인덱스</th><th>타입 / 키 → 값</th><th>역할 · 사용처</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>stationsById</code></td>
+        <td><code>Map&lt;String, OdptStation&gt;</code><br>stationId → Station</td>
+        <td>역 ID로 역 정보 조회. 모든 응답 변환의 시작점.</td>
+      </tr>
+      <tr>
+        <td><code>railwaysById</code></td>
+        <td><code>Map&lt;String, OdptRailway&gt;</code></td>
+        <td>노선 ID → 노선 (이름, 색상, 운영자).</td>
+      </tr>
+      <tr>
+        <td><code>trainTypesById</code></td>
+        <td><code>Map&lt;String, OdptTrainType&gt;</code></td>
+        <td>열차 종별 ID → 다국어 표기.</td>
+      </tr>
+      <tr>
+        <td><code>calendarsById</code></td>
+        <td><code>Map&lt;String, OdptCalendar&gt;</code></td>
+        <td><code>resolveCalendar(date)</code>가 사용. days 매칭 우선.</td>
+      </tr>
+      <tr>
+        <td><code>stationTimetables</code></td>
+        <td><code>Map&lt;String, OdptStationTimetable&gt;</code><br>"<code>stationId::direction::calendar</code>" → SST</td>
+        <td>역 기준 시간표 조회 (디스플레이 용도). 합성 키 사용.</td>
+      </tr>
+      <tr>
+        <td><code>trainTimetables</code></td>
+        <td><code>Map&lt;String, OdptTrainTimetable&gt;</code><br>trainTimetableId → TT</td>
+        <td>RAPTOR가 열차 ID로 시간표 본체를 가져올 때 사용.</td>
+      </tr>
+      <tr>
+        <td><code>fares</code></td>
+        <td><code>Map&lt;String, OdptRailwayFare&gt;</code><br>"<code>from::to</code>" → Fare</td>
+        <td>요금 조회. 사업자 변경 시 leg별로 합산.</td>
+      </tr>
+      <tr>
+        <td><strong><code>nameIndex</code></strong></td>
+        <td><code>Map&lt;String, List&lt;String&gt;&gt;</code><br>소문자 역명 → stationId[]</td>
+        <td><strong>자동완성 핵심.</strong> 일본어/영어/한국어 별칭/ID 후미를 모두 키로 등록.</td>
+      </tr>
+      <tr>
+        <td><strong><code>stationToTrainTimetables</code></strong></td>
+        <td><code>Map&lt;String, List&lt;String&gt;&gt;</code><br>stationId → trainTimetableId[]</td>
+        <td><strong>RAPTOR 성능 핵심.</strong> "이 역을 지나는 열차들"을 풀스캔 없이 조회. 없으면 매 라운드 O(N) 풀스캔이 발생.</td>
+      </tr>
+      <tr>
+        <td><strong><code>transferGraph</code></strong></td>
+        <td><code>Map&lt;String, Set&lt;String&gt;&gt;</code><br>stationId → 환승 가능 stationId[]</td>
+        <td><strong>RAPTOR 환승 확장 핵심.</strong> <code>connectingStation</code> 1차, 같은 이름 그룹핑이 2차 소스. 양방향 등록.</td>
+      </tr>
+      <tr>
+        <td><code>railwayStationOrder</code></td>
+        <td><code>Map&lt;String, List&lt;String&gt;&gt;</code><br>railwayId → 정렬된 stationId[]</td>
+        <td>노선 내 역 순서 표현. <code>OdptRailway.stationOrder</code>를 <code>index</code>로 정렬한 결과.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>7.1 인덱스 빌드 순서</h3>
+  <pre><code>refresh()                    <span class="c1">// @PostConstruct에서 호출</span>
+├── loadStations()           <span class="c1">// stationsById</span>
+├── loadRailways()           <span class="c1">// railwaysById, railwayStationOrder</span>
+├── loadTrainTypes()         <span class="c1">// trainTypesById</span>
+├── loadCalendars()          <span class="c1">// calendarsById</span>
+├── loadStationTimetables()  <span class="c1">// stationTimetables</span>
+├── loadTrainTimetables()    <span class="c1">// trainTimetables</span>
+├── loadFares()              <span class="c1">// fares</span>
+├── buildNameIndex()         <span class="c1">// nameIndex (다국어 + alias dict)</span>
+├── buildTransferGraph()     <span class="c1">// transferGraph (양방향 + 동명역 그룹)</span>
+└── buildStationTrainTimetableIndex()  <span class="c1">// stationToTrainTimetables</span></code></pre>
+
+  <p>
+    빌드 순서가 중요한 이유: <code>buildTransferGraph()</code>는 <code>stationsById</code>가 채워진 뒤에 실행되어야 하고,
+    <code>buildStationTrainTimetableIndex()</code>는 <code>trainTimetables</code> 다음에 실행되어야 한다.
+    리프레시는 <code>synchronized</code> 메서드로 보호되며, 그 동안 <code>ready</code> 플래그가 false가 되어
+    <code>/actuator/health</code>가 DOWN을 반환한다.
+  </p>
+
+  <div class="callout warn">
+    <strong>주의.</strong> JVM 힙은 <code>-Xmx 2g</code>로 설정되어 있다. ODPT 전체 dump를 메모리에 올리는데,
+    역 약 5천 + 시간표 수만 건 + 요금 수만 건 규모라 t3.small(2GB)에서는 마진이 빠듯하다.
+    힙이 부족할 경우 t3.medium(4GB)으로 인스턴스 타입 업그레이드가 필요하다.
+  </div>
+</section>
+
+<!-- ===================== 8. ALGORITHM ===================== -->
+<section class="page-break">
+  <h2>8. 핵심 알고리즘: Reverse RAPTOR</h2>
+
+  <p>
+    일반적인 <strong>RAPTOR</strong>(Round-bAsed Public Transit Optimized Router)는 출발역에서 도착역
+    방향으로 라운드별 확장하며 "가장 빠른 도착 시각"을 찾는 알고리즘이다. 이 프로젝트의
+    <strong>Reverse RAPTOR</strong>는 같은 알고리즘을 시간 축을 뒤집어서 적용한다 — 도착역에서 시작해서 거꾸로 확장하며
+    "가장 늦은 출발 시각"을 찾는다.
+  </p>
+
+  <h3>8.1 라운드 정의</h3>
+  <table>
+    <thead><tr><th>라운드</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td>Round 0</td><td>도착역에 직통으로 가는 열차만 고려 (환승 0회)</td></tr>
+      <tr><td>Round 1</td><td>Round 0 결과 + 환승 1회로 도달 가능한 역</td></tr>
+      <tr><td>Round 2</td><td>+ 환승 2회</td></tr>
+      <tr><td>Round 3</td><td>+ 환승 3회 (최대)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>8.2 각 라운드 내부 처리</h3>
+  <ol>
+    <li><strong>열차 역방향 스캔</strong> — 이번 라운드의 marked station들 각각에 대해, 그 역을 지나는 모든 <code>OdptTrainTimetable</code>을 <code>stationToTrainTimetables</code> 인덱스로 조회한다. 그 열차의 정차역들 중 marked station보다 앞쪽(시간 축 이전) 역들에 대해, 해당 역에서의 출발 시각이 기존 best보다 늦으면 갱신.</li>
+    <li><strong>환승 전파</strong> — 갱신된 역에서 <code>transferGraph</code>로 연결된 환승역들에 대해, 환승 도보 시간 5분을 감산한 시각으로 best를 시도. 더 늦은 시각이면 갱신.</li>
+    <li><strong>출발역 도달 체크</strong> — <code>fromStation</code>의 best가 갱신되어 있으면, 그 시점의 journey를 결과 배열에 추가. (라운드별 최적 경로가 결과에 누적된다.)</li>
+  </ol>
+
+  <h3>8.3 핵심 자료구조</h3>
+  <pre><code><span class="k">Map</span>&lt;String, TimeAndJourney&gt; bestByStation
+   <span class="c1">// stationId → (latestDeparture, journey)</span>
+   <span class="c1">// 해당 역에서 도착역까지 갈 수 있는 가장 늦은 출발 시각</span>
+
+<span class="k">record</span> TimeAndJourney(LocalTime latestDeparture, Journey journey) {}
+<span class="k">record</span> Journey(String fromStation, String toStation, List&lt;Leg&gt; legs) {}
+<span class="k">record</span> Leg(String fromStation, String toStation,
+            String railway, String railDirection,
+            String trainType, String trainNumber,
+            LocalTime departureTime, LocalTime arrivalTime) {
+  <span class="c1">// railway == "TRANSFER" 이면 환승 leg</span>
 }</code></pre>
 
-<p><strong>Phase 2: 환승 확장</strong></p>
-<ol>
-  <li>갱신된 역에서 환승 가능한 역 탐색 (환승 그래프)</li>
-  <li>도보 환승 시간 5분 감산</li>
-  <li>환승 후 역의 best가 개선되면 TRANSFER Leg 추가</li>
-</ol>
+  <h3>8.4 심야 시간 처리</h3>
+  <p>
+    일본 철도 시간표는 자정을 넘는 열차를 <code>24:30</code>, <code>25:00</code>처럼 표기한다. <code>parseTime()</code>이
+    <code>hour &gt;= 24</code>인 경우 24를 빼서 <code>LocalTime</code>으로 변환한다 (예: <code>25:30 → 01:30</code>).
+    그리고 <code>LAST_TRAIN_CUTOFF = 01:30</code>을 기준으로, <code>arrivalTime &lt; 01:30</code>이면 새벽 도착으로 간주하여
+    <code>23:59</code> 이후 열차로도 탑승 가능 처리한다 (<code>isAfterMidnight</code>).
+  </p>
 
-<pre><code>// B역(긴자선)에서 B역(히비야선)으로 환승
-afterWalk = bestByStation[B_긴자].latestDeparture - 5분;
-if (afterWalk > bestByStation[B_히비야].latestDeparture) {
-    bestByStation[B_히비야] = (afterWalk, TRANSFER Leg + 기존여정);
-}</code></pre>
+  <h3>8.5 캘린더 Fallback</h3>
+  <p>
+    <code>LastTrainServiceImpl.resolveCalendarWithFallback()</code>은 오늘 날짜로 캘린더를 결정한 뒤,
+    그 캘린더로 검색해서 결과가 비어있으면 다른 캘린더(Weekday → SaturdayHoliday → Holiday)를 차례로 시도한다.
+    이는 <strong>일부 노선이 특정 캘린더의 데이터를 ODPT에 제공하지 않는 경우</strong>를 우회하기 위한 처리다.
+  </p>
 
-<p><strong>Phase 3: 도달 확인</strong></p>
-<ul>
-  <li>출발역에 도달했으면 결과에 추가</li>
-  <li>더 이상 갱신이 없으면 종료</li>
-</ul>
+  <h3>8.6 결과 후처리</h3>
+  <ul>
+    <li><strong>중복 제거</strong> — 같은 leg 시퀀스(railway × from × to)는 하나만 남기고, 그 중 출발 시각이 가장 늦은 것을 선택.</li>
+    <li><strong>정렬</strong> — 출발 시각 내림차순. 사용자에게 "가장 늦게 출발할 수 있는" 경로가 맨 위에 보인다.</li>
+    <li><strong>요금 계산</strong> — <code>LastTrainServiceImpl.calculateFare()</code>가 ride leg마다 fare 인덱스를 조회해 IC카드 요금을 합산.</li>
+  </ul>
+</section>
 
-<h4>결과 처리</h4>
-<ul>
-  <li>동일 경로 구간 조합의 중복 제거 (같은 노선 조합이면 더 늦은 출발만 유지)</li>
-  <li>출발 시간 내림차순 정렬</li>
-</ul>
+<!-- ===================== 9. API ===================== -->
+<section class="page-break">
+  <h2>9. API 명세</h2>
 
-<h3>2.3 데이터 구조</h3>
-<pre><code>record Journey(String fromStation, String toStation, List&lt;Leg&gt; legs) {
-    LocalTime departureTime()  // 첫 번째 leg의 출발 시각
-    LocalTime arrivalTime()    // 마지막 leg의 도착 시각
-    int transferCount()        // "TRANSFER" leg 개수
-}
+  <h3>9.1 GET /api/v1/stations/search</h3>
+  <p>역명 부분 일치 검색. 자동완성용.</p>
+  <pre><code>GET /api/v1/stations/search?query=shibuya
 
-record Leg(
-    String fromStation, String toStation,
-    String railway,           // "TRANSFER"이면 환승 도보
-    String railDirection, String trainType, String trainNumber,
-    LocalTime departureTime, LocalTime arrivalTime
-)
-
-record TimeAndJourney(LocalTime latestDeparture, Journey journey)</code></pre>
-
-<h3>2.4 시간/공간 복잡도</h3>
-<table>
-  <tr><th>항목</th><th>복잡도</th><th>실측치 (도쿄 전체)</th></tr>
-  <tr><td>라운드당 탐색</td><td>O(S &times; T &times; K)</td><td>S=300+역, T=평균5열차, K=평균20정차</td></tr>
-  <tr><td>환승 확장</td><td>O(S &times; M)</td><td>M=평균3개 환승역</td></tr>
-  <tr><td>전체</td><td>O(R &times; (S&times;T&times;K + S&times;M))</td><td>R=4라운드, 50~500ms</td></tr>
-  <tr><td>공간</td><td>O(S + T&times;K + S&sup2;)</td><td>~300~500MB (전체 캐시)</td></tr>
-</table>
-
-<h3>2.5 핵심 파라미터</h3>
-<table>
-  <tr><th>상수</th><th>값</th><th>의미</th></tr>
-  <tr><td><code>MAX_ROUNDS</code></td><td>4</td><td>최대 3회 환승 (0~3)</td></tr>
-  <tr><td><code>LAST_TRAIN_CUTOFF</code></td><td>01:30</td><td>이 시각 이전은 "심야" 취급</td></tr>
-  <tr><td><code>TRANSFER_WALKING_MINUTES</code></td><td>5</td><td>환승 도보 소요 시간</td></tr>
-</table>
-
-<h3>2.6 엣지 케이스 처리</h3>
-<table>
-  <tr><th>케이스</th><th>처리</th></tr>
-  <tr><td>출발역 = 도착역</td><td>빈 여정 반환 (legs 없음)</td></tr>
-  <tr><td>존재하지 않는 역</td><td>빈 리스트 반환</td></tr>
-  <tr><td>자정 넘김 시간 (00:15)</td><td>24시간 wrapping으로 파싱 (25:00→01:00)</td></tr>
-  <tr><td>경로 없음</td><td>MAX_ROUNDS 이후 빈 리스트 반환</td></tr>
-  <tr><td>동일 경로 중복</td><td>leg 구성이 같으면 더 늦은 출발만 유지</td></tr>
-</table>
-</div>
-
-<!-- ============================================ -->
-<!-- 3. API DESIGN                                -->
-<!-- ============================================ -->
-<div class="section" id="api">
-<h2>3. API 설계</h2>
-
-<h3>3.1 역 검색 API</h3>
-<table>
-  <tr><th colspan="2" style="background:#dbeafe;">GET /api/v1/stations/search</th></tr>
-  <tr><td style="width:100px;">설명</td><td>역명으로 검색. 영어/일본어, 부분 일치 지원. 최대 20건 반환</td></tr>
-</table>
-
-<h4>요청 파라미터</h4>
-<table>
-  <tr><th>이름</th><th>타입</th><th>필수</th><th>설명</th></tr>
-  <tr><td><code>query</code></td><td><span class="badge badge-green">string</span></td><td><span class="badge badge-red">required</span></td><td>역명 (예: <code>shibuya</code>, <code>渋谷</code>)</td></tr>
-</table>
-
-<h4>응답 예시</h4>
-<pre><code>{
+200 OK
+{
   "stations": [
     {
-      "stationId": "odpt.Station:TokyoMetro.Ginza.Shibuya",
-      "nameJa": "渋谷",
-      "nameEn": "Shibuya",
-      "railway": "odpt.Railway:TokyoMetro.Ginza",
-      "railwayNameJa": "銀座線",
-      "railwayNameEn": "Ginza Line",
-      "operator": "odpt.Operator:TokyoMetro",
-      "latitude": 35.6580,
-      "longitude": 139.7016
+      "stationId":      "odpt.Station:TokyoMetro.Ginza.Shibuya",
+      "nameJa":         "渋谷",
+      "nameEn":         "Shibuya",
+      "railway":        "odpt.Railway:TokyoMetro.Ginza",
+      "railwayNameJa":  "東京メトロ銀座線",
+      "railwayNameEn":  "Ginza Line",
+      "operator":       "odpt.Operator:TokyoMetro",
+      "latitude":       35.659,
+      "longitude":      139.7016
     }
   ]
 }</code></pre>
 
-<h4>응답 필드</h4>
-<table>
-  <tr><th>필드</th><th>타입</th><th>설명</th></tr>
-  <tr><td><code>stationId</code></td><td>string</td><td>ODPT 역 고유 식별자. 막차 검색 시 이 값 사용</td></tr>
-  <tr><td><code>nameJa</code></td><td>string</td><td>일본어 역명</td></tr>
-  <tr><td><code>nameEn</code></td><td>string</td><td>영어 역명</td></tr>
-  <tr><td><code>railway</code></td><td>string</td><td>소속 노선 ID</td></tr>
-  <tr><td><code>railwayNameJa</code> / <code>En</code></td><td>string</td><td>노선명 (일본어/영어)</td></tr>
-  <tr><td><code>operator</code></td><td>string</td><td>운영사 ID</td></tr>
-  <tr><td><code>latitude</code> / <code>longitude</code></td><td>number</td><td>좌표 (nullable)</td></tr>
-</table>
+  <h3>9.2 GET /api/v1/last-train</h3>
+  <p>막차 경로 검색.</p>
+  <pre><code>GET /api/v1/last-train?from=odpt.Station:TokyoMetro.Ginza.Shibuya
+                       &to=odpt.Station:JR-East.Yamanote.Tokyo
 
-<h3>3.2 막차 검색 API</h3>
-<table>
-  <tr><th colspan="2" style="background:#dbeafe;">GET /api/v1/last-train</th></tr>
-  <tr><td style="width:100px;">설명</td><td>두 역 간 막차 경로 검색. RAPTOR 알고리즘으로 최대 3회 환승 경로 탐색</td></tr>
-</table>
-
-<h4>요청 파라미터</h4>
-<table>
-  <tr><th>이름</th><th>타입</th><th>필수</th><th>설명</th></tr>
-  <tr><td><code>from</code></td><td><span class="badge badge-green">string</span></td><td><span class="badge badge-red">required</span></td><td>출발역 ID</td></tr>
-  <tr><td><code>to</code></td><td><span class="badge badge-green">string</span></td><td><span class="badge badge-red">required</span></td><td>도착역 ID</td></tr>
-</table>
-
-<h4>응답 예시</h4>
-<pre><code>{
+200 OK
+{
   "fromStation": "odpt.Station:TokyoMetro.Ginza.Shibuya",
-  "toStation": "odpt.Station:JR-East.Yamanote.Tokyo",
+  "toStation":   "odpt.Station:JR-East.Yamanote.Tokyo",
   "calendarType": "Weekday",
   "routes": [
     {
-      "departureTime": "23:45",
-      "arrivalTime": "0:12",
-      "railway": "odpt.Railway:TokyoMetro.Ginza",
-      "railwayNameJa": "銀座線",
-      "railwayNameEn": "Ginza Line",
-      "railDirection": "odpt.RailDirection:TokyoMetro.Asakusa",
-      "trainType": "Local",
+      "departureTime":  "23:45",
+      "arrivalTime":    "00:12",
+      "railway":        "odpt.Railway:TokyoMetro.Ginza",
+      "railwayNameJa":  "東京メトロ銀座線",
+      "trainType":      "Local",
       "destinationNameJa": "浅草",
-      "destinationNameEn": "Asakusa",
-      "transfers": [
-        {
-          "stationNameJa": "赤坂見附",
-          "stationNameEn": "Akasaka-Mitsuke",
-          "fromRailway": "odpt.Railway:TokyoMetro.Ginza",
-          "toRailway": "odpt.Railway:TokyoMetro.Marunouchi",
-          "departureTime": "23:50"
-        }
-      ],
-      "totalFare": 320
+      "transfers":      [],
+      "totalFare":      200
     }
   ]
 }</code></pre>
 
-<h4>Route 필드</h4>
-<table>
-  <tr><th>필드</th><th>타입</th><th>설명</th></tr>
-  <tr><td><code>departureTime</code></td><td>string</td><td>출발 시각 (HH:MM). 자정 넘김은 0:xx로 표시</td></tr>
-  <tr><td><code>arrivalTime</code></td><td>string</td><td>도착 시각</td></tr>
-  <tr><td><code>railway</code></td><td>string</td><td>첫 번째 탑승 노선 ID</td></tr>
-  <tr><td><code>trainType</code></td><td>string</td><td>열차 종별 (Local, Rapid 등). nullable</td></tr>
-  <tr><td><code>transfers</code></td><td>array</td><td>환승 정보. 직통이면 빈 배열</td></tr>
-  <tr><td><code>totalFare</code></td><td>number</td><td>IC카드 기준 총 요금 (엔). 데이터 없으면 0</td></tr>
-</table>
+  <h3>9.3 GET /actuator/health (내부)</h3>
+  <p>
+    <code>localhost</code>에서만 호출 가능하도록 Nginx에서 차단(<code>deny all; return 403;</code>).
+    <code>deploy.sh</code>가 무중단 배포 시 이 엔드포인트를 polling 한다. 캐시가 ready 상태가 아니면 DOWN.
+  </p>
+</section>
 
-<h4>에러 응답</h4>
-<table>
-  <tr><th>코드</th><th>원인</th></tr>
-  <tr><td><code>400</code></td><td>필수 파라미터 누락 (<code>from</code>, <code>to</code>, <code>query</code>)</td></tr>
-  <tr><td><code>500</code></td><td>서버 내부 오류 (캐시 미초기화 등)</td></tr>
-</table>
-</div>
+<!-- ===================== 10. DEPLOYMENT ===================== -->
+<section class="page-break">
+  <h2>10. 배포 파이프라인</h2>
 
-<!-- ============================================ -->
-<!-- 4. BACKEND DETAIL                            -->
-<!-- ============================================ -->
-<div class="section" id="backend">
-<h2>4. 백엔드 상세 설계</h2>
+  <p>
+    Jenkins(로컬 Docker) → GitHub → 빌드 → SCP → systemd 재시작 → health 확인의 순서로 동작한다.
+    아래는 <code>Jenkinsfile</code>이 정의하는 stage 흐름이다.
+  </p>
 
-<h3>4.1 TransitDataCache - 인메모리 캐시 전략</h3>
-<p>서버 시작 시 ODPT dump API로 도쿄 수도권 전체 교통 데이터를 한 번에 로딩합니다. 이후 모든 조회는 메모리에서 수행하여 <strong>쿼리당 API 호출 0회</strong>를 달성합니다.</p>
+  <table>
+    <thead><tr><th>단계</th><th>작업</th><th>도구</th></tr></thead>
+    <tbody>
+      <tr><td>1. Checkout</td><td>GitHub <code>main</code> 브랜치를 가져옴</td><td><code>checkout scm</code></td></tr>
+      <tr><td>2. Build Frontend</td><td><code>npm ci</code> + <code>npm run build</code> → <code>frontend/dist/</code></td><td>NodeJS 18, Vite</td></tr>
+      <tr><td>3. Build Backend</td><td><code>frontend/dist/*</code> → <code>src/main/resources/static/</code> 복사 후 <code>mvn clean package -DskipTests</code></td><td>JDK 21, Maven</td></tr>
+      <tr><td>4. Test</td><td><code>mvn test</code> (캐시 빌더, RAPTOR, 컨트롤러 단위 테스트)</td><td>JUnit 5, MockMvc</td></tr>
+      <tr><td>5. Deploy</td><td>JAR + <code>deploy.sh</code> + <code>frontend/dist/</code>를 EC2로 SCP, SSH로 <code>deploy.sh</code> 실행</td><td>SCP, SSH (key from Jenkins credentials)</td></tr>
+      <tr><td>6. (deploy.sh) JAR 교체</td><td><code>app.jar.new</code> → <code>app.jar</code> 원자적 교체</td><td>shell <code>mv</code></td></tr>
+      <tr><td>7. (deploy.sh) Static 갱신</td><td><code>/var/www/tokyo-last-train/</code> 정적 파일 교체</td><td>shell <code>cp -r</code></td></tr>
+      <tr><td>8. (deploy.sh) Restart</td><td><code>systemctl restart tokyo-last-train</code></td><td>systemd</td></tr>
+      <tr><td>9. (deploy.sh) Health Polling</td><td>최대 4분간 <code>/actuator/health</code>가 UP을 반환할 때까지 대기 (5초 간격, 48회)</td><td><code>curl + grep</code></td></tr>
+    </tbody>
+  </table>
 
-<h4>캐시 데이터 구조 (12개 ConcurrentHashMap)</h4>
-<table>
-  <tr><th>맵</th><th>Key</th><th>Value</th><th>용도</th></tr>
-  <tr><td><code>stationsById</code></td><td>역 ID</td><td>OdptStation</td><td>역 정보 조회</td></tr>
-  <tr><td><code>railwaysById</code></td><td>노선 ID</td><td>OdptRailway</td><td>노선 정보 조회</td></tr>
-  <tr><td><code>trainTimetables</code></td><td>시간표 ID</td><td>OdptTrainTimetable</td><td>열차별 정차역+시각</td></tr>
-  <tr><td><code>fares</code></td><td>"출발역::도착역"</td><td>OdptRailwayFare</td><td>요금 조회</td></tr>
-  <tr><td><code>nameIndex</code></td><td>소문자 역명</td><td>List&lt;역ID&gt;</td><td>역명 검색</td></tr>
-  <tr><td><code>stationToTrainTimetables</code></td><td>역 ID</td><td>List&lt;시간표ID&gt;</td><td>역별 열차 빠른 조회</td></tr>
-  <tr><td><code>transferGraph</code></td><td>역 ID</td><td>Set&lt;역ID&gt;</td><td>환승 가능 역 탐색</td></tr>
-  <tr><td><code>calendarsById</code></td><td>캘린더 ID</td><td>OdptCalendar</td><td>요일/휴일 판별</td></tr>
-</table>
+  <h3>10.1 Jenkins 자격증명 이름</h3>
+  <p>Jenkinsfile은 다음 credential ID를 참조한다 — Jenkins UI에서 동일한 이름으로 등록되어 있어야 한다.</p>
+  <ul>
+    <li><code>ec2-host</code> — EC2 퍼블릭 IP (Secret Text)</li>
+    <li><code>ec2-ssh-key</code> — EC2 SSH 프라이빗 키 (SSH Username with private key, username <code>ec2-user</code>)</li>
+    <li><code>odpt-api-key</code> — ODPT 컨슈머 키 (Secret Text)</li>
+  </ul>
 
-<div class="callout">
-  <strong>왜 ConcurrentHashMap?</strong> Spring MVC는 멀티스레드로 요청을 처리하므로, 초기화 이후 읽기 전용이더라도 thread-safe 컬렉션을 사용하여 안전성을 보장합니다.
-</div>
+  <h3>10.2 무중단 배포 보장</h3>
+  <p>
+    JAR 교체는 <code>app.jar.new</code>를 SCP로 받은 뒤 <code>mv</code>로 atomic 치환한다.
+    <code>systemctl restart</code> 직후에 새 프로세스의 캐시 로딩(2~3분)이 끝날 때까지 health가 DOWN으로 머물고,
+    deploy.sh가 그동안 polling하여 UP을 확인한 후 종료한다 — 즉, 빌드 잡의 종료가 곧 "사용자에게 응답 가능 상태" 시점이다.
+    실패 시 <code>journalctl</code> 마지막 50줄을 출력하고 exit 1.
+  </p>
 
-<h3>4.2 캘린더 해석 (resolveCalendar)</h3>
-<pre><code>1. 특정 날짜 캘린더 확인 (holidays 등에 날짜가 직접 지정된 경우)
-2. 요일 기반 판별:
-   - 토요일 → SaturdayHoliday (없으면 Holiday로 fallback)
-   - 일요일 → Holiday
-   - 평일 → Weekday</code></pre>
-
-<h4>Fallback 전략</h4>
-<p>해석된 캘린더로 경로가 0건이면 다른 캘린더로 자동 재시도:</p>
-<pre><code>Weekday → SaturdayHoliday → Holiday (순서대로 시도)</code></pre>
-<p>이는 ODPT 데이터의 캘린더 정의가 운영사마다 다른 문제를 해결합니다.</p>
-
-<h3>4.3 요금 계산 (calculateFare)</h3>
-<pre><code>총요금 = 0
-for (각 탑승 구간 leg) {
-    fare = cache.getFare(leg.출발역, leg.도착역);
-    if (fare.icCardFare != null) 총요금 += fare.icCardFare;    // IC카드 우선
-    else if (fare.ticketFare != null) 총요금 += fare.ticketFare; // 일반 승차권 fallback
-}
-return 총요금;</code></pre>
-
-<div class="callout">
-  <strong>IC카드 우선:</strong> 도쿄에서는 대부분 Suica/PASMO를 사용하므로 IC카드 요금을 기본으로 표시합니다.
-</div>
-
-<h3>4.4 환승 그래프 구축</h3>
-<ol>
-  <li><strong>Primary:</strong> ODPT 데이터의 <code>connectingStation</code> 필드 활용 (공식 환승역)</li>
-  <li><strong>Secondary:</strong> 같은 일본어 역명을 가진 다른 노선의 역을 자동 연결</li>
-  <li>양방향(bidirectional) 간선으로 구축</li>
-</ol>
-
-<h3>4.5 역명 검색 인덱스</h3>
-<p>3가지 키로 인덱싱:</p>
-<ol>
-  <li>일본어 역명 소문자 (예: <code>渋谷</code>)</li>
-  <li>영어 역명 소문자 (예: <code>shibuya</code>)</li>
-  <li>역 ID의 마지막 부분 소문자 (예: <code>shibuya</code> from <code>odpt.Station:...Shibuya</code>)</li>
-</ol>
-<p>검색 시 정확 일치 → 부분 일치 순서로 탐색하여 결과 품질을 높입니다.</p>
-
-<h3>4.6 CORS 설정</h3>
-<pre><code>// WebConfig.java
-registry.addMapping("/api/**")
-    .allowedOrigins("http://localhost:3000")
-    .allowedMethods("GET");</code></pre>
-</div>
-
-<!-- ============================================ -->
-<!-- 5. FRONTEND                                  -->
-<!-- ============================================ -->
-<div class="section" id="frontend">
-<h2>5. 프론트엔드 설계 및 목업</h2>
-
-<h3>5.1 컴포넌트 트리</h3>
-<pre><code>App.tsx
-├── Header.tsx                    // 서비스 타이틀
-├── SearchForm.tsx                // 검색 폼 컨테이너
-│   ├── StationInput.tsx (출발역)  // 자동완성 입력
-│   ├── SwapButton               // 역 교환
-│   └── StationInput.tsx (도착역)  // 자동완성 입력
-├── LoadingSpinner.tsx            // 로딩 인디케이터
-├── ErrorMessage                  // 에러 표시
-└── RouteList.tsx                 // 결과 목록
-    └── RouteCard.tsx × N         // 개별 경로 카드
-        └── TransferStep.tsx × M  // 환승 정보</code></pre>
-
-<h3>5.2 상태 관리</h3>
-<p>외부 상태 관리 라이브러리 없이 <code>useState</code> + Custom Hooks만 사용합니다.</p>
-
-<table>
-  <tr><th>Hook</th><th>상태</th><th>역할</th></tr>
-  <tr><td><code>useStationSearch</code></td><td>query, results, selectedStation, isLoading</td><td>역 검색 자동완성 (디바운스 300ms, AbortController)</td></tr>
-  <tr><td><code>useLastTrain</code></td><td>result, isLoading, error</td><td>막차 검색 결과</td></tr>
-</table>
-
-<h4>자동완성 흐름</h4>
-<pre><code>사용자 타이핑 → 300ms 디바운스 대기
-    → 이전 요청 abort → 새 요청 fetch
-    → 결과 드롭다운 표시
-    → 키보드(↑↓ Enter Esc) 또는 클릭으로 선택
-    → 선택되면 chip UI로 전환 (×로 초기화)</code></pre>
-
-<h3>5.3 UI 목업</h3>
-
-<div class="mockup">
-  <div class="mockup-title">메인 화면 - 검색 전</div>
-  <div class="mockup-inner">
-    <div class="mockup-header">도쿄 막차 검색</div>
-    <div class="mockup-sub">Tokyo Last Train Finder</div>
-    <div style="background:#fff;border:1px solid #e2e5e9;border-radius:12px;padding:0.8rem;margin-bottom:0.8rem;">
-      <div style="font-size:0.65rem;color:#9ca3af;margin-bottom:0.3rem;">출발역</div>
-      <div class="mockup-input">역 이름을 입력하세요</div>
-      <div style="text-align:center;color:#ccc;font-size:0.9rem;margin:0.3rem 0;">↕</div>
-      <div style="font-size:0.65rem;color:#9ca3af;margin-bottom:0.3rem;">도착역</div>
-      <div class="mockup-input">역 이름을 입력하세요</div>
-      <div class="mockup-btn">막차 검색</div>
-    </div>
+  <h3>10.3 시퀀스 다이어그램</h3>
+  <div class="arch-figure">
+    <svg viewBox="0 0 820 360" xmlns="http://www.w3.org/2000/svg" font-size="10" font-family="'Noto Sans KR', sans-serif">
+      <defs>
+        <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#4f46e5"/>
+        </marker>
+      </defs>
+      <!-- columns -->
+      <g font-weight="600" fill="#0f172a">
+        <text x="80"  y="22" text-anchor="middle">Developer</text>
+        <text x="220" y="22" text-anchor="middle">GitHub</text>
+        <text x="360" y="22" text-anchor="middle">Jenkins</text>
+        <text x="500" y="22" text-anchor="middle">EC2</text>
+        <text x="640" y="22" text-anchor="middle">systemd</text>
+        <text x="770" y="22" text-anchor="middle">Nginx</text>
+      </g>
+      <!-- lifelines -->
+      <g stroke="#cbd5e1" stroke-dasharray="3 3">
+        <line x1="80"  y1="32" x2="80"  y2="340"/>
+        <line x1="220" y1="32" x2="220" y2="340"/>
+        <line x1="360" y1="32" x2="360" y2="340"/>
+        <line x1="500" y1="32" x2="500" y2="340"/>
+        <line x1="640" y1="32" x2="640" y2="340"/>
+        <line x1="770" y1="32" x2="770" y2="340"/>
+      </g>
+      <!-- arrows -->
+      <g stroke="#4f46e5" stroke-width="1.5" fill="none">
+        <line x1="80"  y1="60"  x2="220" y2="60"  marker-end="url(#arr2)"/>
+        <line x1="220" y1="100" x2="360" y2="100" marker-end="url(#arr2)"/>
+        <line x1="360" y1="140" x2="360" y2="160" marker-end="url(#arr2)"/>
+        <line x1="360" y1="190" x2="500" y2="190" marker-end="url(#arr2)"/>
+        <line x1="500" y1="220" x2="640" y2="220" marker-end="url(#arr2)"/>
+        <line x1="500" y1="260" x2="640" y2="260" marker-end="url(#arr2)"/>
+        <line x1="640" y1="290" x2="500" y2="290" marker-end="url(#arr2)"/>
+        <line x1="500" y1="320" x2="770" y2="320" marker-end="url(#arr2)"/>
+      </g>
+      <g fill="#1e293b">
+        <text x="150" y="55"  text-anchor="middle">git push origin main</text>
+        <text x="290" y="95"  text-anchor="middle">checkout scm</text>
+        <text x="370" y="155" text-anchor="start">npm/mvn build + test</text>
+        <text x="430" y="185" text-anchor="middle">SCP app.jar / deploy.sh / dist/</text>
+        <text x="570" y="215" text-anchor="middle">restart unit</text>
+        <text x="570" y="255" text-anchor="middle">poll /actuator/health</text>
+        <text x="570" y="285" text-anchor="middle">UP (캐시 ready)</text>
+        <text x="635" y="315" text-anchor="middle">/var/www 정적 갱신 + reload</text>
+      </g>
+    </svg>
+    <div class="caption">그림 10-1. 빌드~헬스체크 시퀀스. systemd → 캐시 로딩(2~3분) → UP 확인 후 잡 종료.</div>
   </div>
-</div>
+</section>
 
-<div class="mockup">
-  <div class="mockup-title">검색 결과 - 경로 카드</div>
-  <div class="mockup-inner">
-    <div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.6rem;">
-      <span class="badge badge-blue">평일</span>
-      <span style="font-size:0.75rem;color:#9ca3af;">1개의 경로</span>
-    </div>
-    <div class="mockup-card">
-      <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:#9ca3af;margin-bottom:0.3rem;">
-        <span>#1 <span class="badge badge-blue">Local</span></span>
-        <span style="font-weight:700;color:#1a1a1a;">¥200</span>
-      </div>
-      <div class="mockup-time">
-        23:30 <span style="color:#F39700;">→</span> 0:00 <span class="badge badge-red" style="font-size:0.6rem;">익일</span>
-      </div>
-      <div style="font-size:0.65rem;color:#9ca3af;text-align:center;margin-bottom:0.5rem;">출발 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 도착</div>
-      <div class="mockup-line">
-        <span class="mockup-dot" style="background:#F39700;"></span>
-        銀座線 <span style="opacity:0.6;">Ginza Line</span>
-      </div>
-      <div style="font-size:0.72rem;color:#9ca3af;padding-left:1rem;margin-top:0.15rem;">행선지: 浅草 / Asakusa</div>
-    </div>
-  </div>
-</div>
+<!-- ===================== 11. INFRA ===================== -->
+<section class="page-break">
+  <h2>11. 운영 인프라</h2>
 
-<div class="mockup">
-  <div class="mockup-title">자동완성 드롭다운</div>
-  <div class="mockup-inner">
-    <div style="font-size:0.65rem;color:#9ca3af;margin-bottom:0.3rem;">출발역</div>
-    <div class="mockup-input" style="border-color:#0284c7;">shibu</div>
-    <div style="background:#fff;border:1px solid #e2e5e9;border-radius:8px;padding:0.3rem;font-size:0.8rem;">
-      <div style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem;background:#f3f4f6;border-radius:6px;margin-bottom:0.2rem;">
-        <span class="mockup-dot" style="background:#F39700;"></span>
-        <div>
-          <div><strong>渋谷</strong> <span style="color:#9ca3af;font-size:0.7rem;">Shibuya</span></div>
-          <div style="font-size:0.65rem;color:#9ca3af;">銀座線 Ginza Line</div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem;">
-        <span class="mockup-dot" style="background:#80C241;"></span>
-        <div>
-          <div><strong>渋谷</strong> <span style="color:#9ca3af;font-size:0.7rem;">Shibuya</span></div>
-          <div style="font-size:0.65rem;color:#9ca3af;">山手線 Yamanote Line</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+  <h3>11.1 EC2 사양</h3>
+  <table>
+    <tbody>
+      <tr><td>리전</td><td>ap-northeast-1 (Tokyo) — 일본 사용자 레이턴시 최소화</td></tr>
+      <tr><td>AMI</td><td>Amazon Linux 2023 (x86_64)</td></tr>
+      <tr><td>인스턴스 타입</td><td>t3.small (vCPU 2, 메모리 2GB) — 최소 사양. ODPT 캐시 메모리 마진을 고려하면 t3.medium(4GB) 권장.</td></tr>
+      <tr><td>디스크</td><td>gp3 20GB</td></tr>
+      <tr><td>보안 그룹</td><td>22(개발자 IP만), 80(전체), 443(전체 — HTTPS 활성화 후)</td></tr>
+      <tr><td>SSH 사용자</td><td><code>ec2-user</code> (Amazon Linux 표준)</td></tr>
+    </tbody>
+  </table>
 
-<h3>5.4 디자인 시스템</h3>
+  <h3>11.2 systemd 유닛</h3>
+  <p>
+    <code>/etc/systemd/system/tokyo-last-train.service</code>로 등록되어 부팅 시 자동 시작.
+    OOM 발생 시 <code>-XX:+ExitOnOutOfMemoryError</code>로 즉시 종료, <code>Restart=on-failure</code>로 systemd가 10초 후 재시작.
+  </p>
+  <pre><code>[Service]
+Type=simple
+User=ec2-user
+WorkingDirectory=/opt/tokyo-last-train
+ExecStart=/usr/bin/java -Xms512m -Xmx2g -XX:+ExitOnOutOfMemoryError \
+          -Duser.timezone=Asia/Tokyo -jar /opt/tokyo-last-train/app.jar
+EnvironmentFile=/opt/tokyo-last-train/.env  <span class="c1"># ODPT_API_KEY</span>
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal</code></pre>
 
-<h4>컬러 토큰 (CSS Custom Properties)</h4>
-<table>
-  <tr><th>변수</th><th>값</th><th>용도</th></tr>
-  <tr><td><code>--bg-primary</code></td><td><code>#f5f6f8</code></td><td>페이지 배경</td></tr>
-  <tr><td><code>--bg-secondary</code></td><td><code>#ffffff</code></td><td>폼/카드 배경</td></tr>
-  <tr><td><code>--text-primary</code></td><td><code>#1a1a1a</code></td><td>주요 텍스트</td></tr>
-  <tr><td><code>--text-secondary</code></td><td><code>#6b7280</code></td><td>보조 텍스트</td></tr>
-  <tr><td><code>--accent-primary</code></td><td><code>#e94560</code></td><td>CTA 버튼, 강조</td></tr>
-  <tr><td><code>--accent-secondary</code></td><td><code>#0284c7</code></td><td>링크, 포커스, 배지</td></tr>
-  <tr><td><code>--border-color</code></td><td><code>#e2e5e9</code></td><td>테두리</td></tr>
-</table>
+  <h3>11.3 Nginx 구성</h3>
+  <p>
+    SPA 라우팅(<code>try_files</code>) + API 프록시 + Actuator 외부 차단 + gzip.
+  </p>
+  <pre><code>server {
+    listen 80 default_server;
+    server_name _;
+    root /var/www/tokyo-last-train;
+    index index.html;
 
-<h4>노선 컬러 매핑 (52개 노선)</h4>
-<p>도쿄 주요 노선의 공식 컬러를 하드코딩하여 시각적으로 즉시 식별 가능합니다.</p>
-<div class="color-grid">
-  <div class="color-item"><span class="color-swatch" style="background:#F39700"></span>긴자선 Ginza</div>
-  <div class="color-item"><span class="color-swatch" style="background:#E60012"></span>마루노우치 Marunouchi</div>
-  <div class="color-item"><span class="color-swatch" style="background:#009BBF"></span>토자이선 Tozai</div>
-  <div class="color-item"><span class="color-swatch" style="background:#00A650"></span>치요다선 Chiyoda</div>
-  <div class="color-item"><span class="color-swatch" style="background:#8B76D0"></span>한조몬선 Hanzomon</div>
-  <div class="color-item"><span class="color-swatch" style="background:#9C5E31"></span>후쿠토신선 Fukutoshin</div>
-  <div class="color-item"><span class="color-swatch" style="background:#80C241"></span>야마노테선 Yamanote</div>
-  <div class="color-item"><span class="color-swatch" style="background:#00B2E5"></span>케이힌토호쿠 K-Tohoku</div>
-  <div class="color-item"><span class="color-swatch" style="background:#E85298"></span>토에이 아사쿠사 Asakusa</div>
-  <div class="color-item"><span class="color-swatch" style="background:#6CBB5A"></span>토에이 신주쿠 Shinjuku</div>
-  <div class="color-item"><span class="color-swatch" style="background:#B6007A"></span>토에이 오에도 Oedo</div>
-  <div class="color-item"><span class="color-swatch" style="background:#DA0442"></span>토큐 토요코선 Toyoko</div>
-</div>
+    location / {
+        try_files $uri $uri/ /index.html;     <span class="c1"># SPA 라우팅</span>
+    }
+    location /api/ {
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_read_timeout 180s;              <span class="c1"># 캐시 로딩 직후 첫 요청 대비</span>
+    }
+    location /actuator/ {
+        deny all; return 403;                  <span class="c1"># 외부 차단</span>
+    }
+    gzip on;
+    gzip_types text/plain text/css application/json
+               application/javascript application/xml text/xml image/svg+xml;
+}</code></pre>
 
-<h3>5.5 반응형 설계</h3>
-<p>모바일 퍼스트 (도쿄에서 핸드폰으로 사용하는 시나리오). <code>max-width: 480px</code> 컨테이너로 데스크탑에서도 앱 느낌 유지.</p>
+  <h3>11.4 디렉토리 배치</h3>
+  <table>
+    <thead><tr><th>경로</th><th>용도</th></tr></thead>
+    <tbody>
+      <tr><td><code>/opt/tokyo-last-train/app.jar</code></td><td>실행 중인 Spring Boot JAR</td></tr>
+      <tr><td><code>/opt/tokyo-last-train/app.jar.new</code></td><td>SCP 수신 직후의 새 JAR (deploy.sh가 mv)</td></tr>
+      <tr><td><code>/opt/tokyo-last-train/.env</code></td><td><code>ODPT_API_KEY=...</code></td></tr>
+      <tr><td><code>/opt/tokyo-last-train/deploy.sh</code></td><td>매 배포 시 SCP로 갱신되는 배포 스크립트</td></tr>
+      <tr><td><code>/opt/tokyo-last-train/frontend/</code></td><td>SCP 수신 직후의 React dist (deploy.sh가 /var/www로 복사)</td></tr>
+      <tr><td><code>/var/www/tokyo-last-train/</code></td><td>Nginx가 서빙하는 정적 파일</td></tr>
+      <tr><td><code>/etc/nginx/conf.d/tokyo-last-train.conf</code></td><td>Nginx 사이트 설정</td></tr>
+      <tr><td><code>/etc/systemd/system/tokyo-last-train.service</code></td><td>systemd 유닛 정의</td></tr>
+    </tbody>
+  </table>
 
-<h3>5.6 접근성</h3>
-<ul>
-  <li>자동완성: <code>role="listbox"</code>, <code>role="option"</code>, <code>aria-selected</code></li>
-  <li>키보드 네비게이션: ↑↓ Enter Escape 완전 지원</li>
-  <li>최소 터치 타겟: 48px (검색 버튼)</li>
-</ul>
-</div>
+  <h3>11.5 보안 / 비밀 관리</h3>
+  <ul>
+    <li>ODPT API 키는 <code>/opt/tokyo-last-train/.env</code>에 두고 systemd <code>EnvironmentFile=</code>로 주입. 코드/리포지터리에는 절대 들어가지 않는다.</li>
+    <li>Jenkins → EC2 SSH 접속은 ed25519 전용 키(<code>jenkins-deploy-key</code>) 사용, 비밀번호 없음.</li>
+    <li>Actuator는 외부 노출되지 않는다 (Nginx에서 403 반환).</li>
+    <li>HTTPS는 Let's Encrypt(<code>scripts/enable-https.sh</code>)로 도메인 발급 후 활성화 예정.</li>
+  </ul>
+</section>
 
-<!-- ============================================ -->
-<!-- 6. TEST DOCUMENT                             -->
-<!-- ============================================ -->
-<div class="section" id="test">
-<h2>6. 테스트 문서</h2>
+<!-- ===================== 12. FUTURE WORK ===================== -->
+<section class="page-break">
+  <h2>12. 향후 과제</h2>
 
-<h3>6.1 테스트 전략</h3>
-<table>
-  <tr><th>레이어</th><th>방식</th><th>도구</th></tr>
-  <tr><td>Controller</td><td>Spring MockMvc 통합 테스트</td><td>@WebMvcTest, @MockitoBean</td></tr>
-  <tr><td>Service</td><td>단위 테스트 (Mock 캐시 주입)</td><td>JUnit 5, Reflection</td></tr>
-  <tr><td>Algorithm</td><td>단위 테스트 (Mock 네트워크)</td><td>JUnit 5, Reflection</td></tr>
-  <tr><td>Cache</td><td>단위 테스트 (Mock 데이터 주입)</td><td>JUnit 5, Reflection</td></tr>
-</table>
+  <ul>
+    <li><strong>도메인 등록 + HTTPS</strong> — Cloudflare/Porkbun에서 도메인 구입 → DNS A 레코드 → <code>scripts/enable-https.sh</code>로 Let's Encrypt 발급.</li>
+    <li><strong>Search Console 등록</strong> — DNS TXT 레코드 검증 + sitemap 제출 → 일본 구글에서 인덱싱.</li>
+    <li><strong>인스턴스 업그레이드 또는 Elastic IP</strong> — 캐시 메모리 압박이 있으면 t3.medium으로, IP 안정성을 위해 Elastic IP 부착.</li>
+    <li><strong>JR 외 사철 데이터 보완</strong> — ODPT가 제공하지 않는 일부 사철은 <code>connectingStation</code>이 없어 환승 그래프가 불완전. 동명역 그룹핑이 fallback이지만 정확도 한계.</li>
+    <li><strong>모니터링</strong> — 현재는 <code>journalctl</code>만 의존. CloudWatch 또는 Grafana Cloud로 메트릭/알람 보강.</li>
+    <li><strong>주기 캐시 갱신</strong> — <code>TransitDataRefreshScheduler</code>가 존재하지만 트리거 주기를 운영 중 검증 필요. ODPT는 일 단위 변경이므로 매일 새벽 1회로 충분.</li>
+    <li><strong>RAPTOR 최적화</strong> — 현재 <code>scanRoutesReverse</code>는 라운드별 marked station × 그 역의 시간표 수만큼 반복. 시간표 수가 많은 환승역(신주쿠/도쿄)에서 라운드 1~2 비용이 큼. trip-by-trip pruning 도입 여지.</li>
+  </ul>
 
-<div class="callout">
-  <strong>Mock 전략:</strong> <code>TransitDataCache</code>의 <code>@PostConstruct</code>를 우회하기 위해 <code>apiClient=null</code>로 생성 후, Reflection으로 private 필드에 테스트 데이터를 직접 주입합니다.
-</div>
-
-<h3>6.2 전체 테스트 요약</h3>
-<table>
-  <tr><th>테스트 클래스</th><th>테스트 수</th><th>대상</th></tr>
-  <tr><td>ReverseRaptorEngineTest</td><td><strong>15</strong></td><td>경로 탐색 알고리즘</td></tr>
-  <tr><td>TransitDataCacheTest</td><td><strong>23</strong></td><td>캐시 조회, 캘린더, 검색</td></tr>
-  <tr><td>LastTrainServiceTest</td><td><strong>12</strong></td><td>서비스 레이어 통합</td></tr>
-  <tr><td>StationSearchServiceTest</td><td><strong>7</strong></td><td>역 검색 서비스</td></tr>
-  <tr><td>LastTrainControllerTest</td><td><strong>4</strong></td><td>막차 API 엔드포인트</td></tr>
-  <tr><td>StationControllerTest</td><td><strong>3</strong></td><td>역검색 API 엔드포인트</td></tr>
-  <tr><td><strong>합계</strong></td><td><strong>67 (64 pass + 3 edge)</strong></td><td></td></tr>
-</table>
-
-<h3>6.3 ReverseRaptorEngineTest (15건)</h3>
-<p>테스트 네트워크:</p>
-<div class="diagram">
-<pre style="background:none;border:none;text-align:left;padding:0;margin:0;">
-[A역] ──LineA──▶ [B역] ──LineA──▶ [C역]
-                    │
-                  (환승, 도보 5분)
-                    │
-[D역] ──LineB──▶ [B역'] ──LineB──▶ [E역]
-
-LineA 열차1: A(23:00) → B(23:15) → C(23:30)
-LineA 열차2: A(23:30) → B(23:45) → C(00:00)  ← 막차
-LineB 열차1: D(23:00) → B(23:20) → E(23:40)
-LineB 열차2: D(23:30) → B(23:50) → E(00:10)  ← 막차
-</pre>
-</div>
-
-<table>
-  <tr><th>#</th><th>테스트명</th><th>검증 내용</th><th>기대 결과</th></tr>
-  <tr><td>1</td><td>directRoute</td><td>A→C 직통 경로</td><td>환승 0회, 출발 23:30</td></tr>
-  <tr><td>2</td><td>transferRoute</td><td>A→E 환승 경로</td><td>환승 1회 이상</td></tr>
-  <tr><td>3</td><td>reverseDirectRoute</td><td>D→B 직통</td><td>환승 0회</td></tr>
-  <tr><td>4</td><td>noRouteFound</td><td>E→A 불가능 경로</td><td>에러 없이 빈 결과</td></tr>
-  <tr><td>5</td><td>sameStation</td><td>A→A 동일역</td><td>빈 여정</td></tr>
-  <tr><td>6</td><td>latestDepartureSelected</td><td>23:00 vs 23:30 선택</td><td>23:30 선택됨</td></tr>
-  <tr><td>7</td><td>directRouteLegDetails</td><td>Leg 상세 정보</td><td>from=A, to=C, railway=LineA</td></tr>
-  <tr><td>8</td><td>transferRouteLegStructure</td><td>Leg 구성</td><td>ride(2) + transfer(1)</td></tr>
-  <tr><td>9</td><td>journeyTimeMethods</td><td>시간 계산</td><td>departureTime > 22:00</td></tr>
-  <tr><td>10</td><td>emptyJourneyTime</td><td>빈 여정</td><td>LocalTime.MIN</td></tr>
-  <tr><td>11</td><td>legIsTransfer</td><td>isTransfer() 판별</td><td>TRANSFER일 때만 true</td></tr>
-  <tr><td>12</td><td>partialRoute</td><td>A→B 중간역</td><td>경로 존재, 환승 0회</td></tr>
-  <tr><td>13</td><td>nonExistentStation</td><td>없는 역</td><td>빈 리스트</td></tr>
-  <tr><td>14</td><td>nonExistentCalendar</td><td>없는 캘린더</td><td>빈 리스트</td></tr>
-  <tr><td>15</td><td>resultsSortedByDepartureDesc</td><td>정렬 순서</td><td>출발시간 내림차순</td></tr>
-</table>
-
-<h3>6.4 TransitDataCacheTest (23건)</h3>
-<table>
-  <tr><th>카테고리</th><th>테스트명</th><th>검증 내용</th></tr>
-  <tr><td rowspan="5">캘린더 해석</td><td>resolveCalendarWeekday</td><td>월요일 → Weekday</td></tr>
-  <tr><td>resolveCalendarSaturday</td><td>토요일 → SaturdayHoliday</td></tr>
-  <tr><td>resolveCalendarSunday</td><td>일요일 → Holiday</td></tr>
-  <tr><td>resolveCalendarSpecificDay</td><td>특정일 지정 캘린더 우선</td></tr>
-  <tr><td>resolveCalendarSaturdayFallback</td><td>SaturdayHoliday 없으면 Holiday</td></tr>
-  <tr><td rowspan="5">역 검색</td><td>searchStationsExactMatch</td><td>정확 일치</td></tr>
-  <tr><td>searchStationsPartialMatch</td><td>부분 일치</td></tr>
-  <tr><td>searchStationsCaseInsensitive</td><td>대소문자 무시</td></tr>
-  <tr><td>searchStationsJapanese</td><td>일본어 검색</td></tr>
-  <tr><td>searchStationsNotFound</td><td>결과 없음</td></tr>
-  <tr><td rowspan="5">데이터 조회</td><td>getStationExists / NotExists</td><td>역 조회 (존재/미존재)</td></tr>
-  <tr><td>getRailwayExists / NotExists</td><td>노선 조회</td></tr>
-  <tr><td>getTrainType / NotExists</td><td>열차 종별 조회</td></tr>
-  <tr><td>getTransferStations / Empty</td><td>환승역 조회</td></tr>
-  <tr><td>getFare / getFareReverse</td><td>요금 조회 (정방향/역방향)</td></tr>
-  <tr><td rowspan="3">시간표</td><td>getTrainTimetablesForStation</td><td>역별 열차 목록</td></tr>
-  <tr><td>...WithCalendar</td><td>캘린더 필터링</td></tr>
-  <tr><td>...Empty</td><td>빈 결과</td></tr>
-  <tr><td>컬렉션</td><td>getAllStations / getAllRailways</td><td>전체 데이터 수 확인</td></tr>
-</table>
-
-<h3>6.5 LastTrainServiceTest (12건)</h3>
-<table>
-  <tr><th>#</th><th>테스트명</th><th>검증 내용</th></tr>
-  <tr><td>1</td><td>responseContainsStationInfo</td><td>응답에 출발/도착역 ID, 캘린더 타입 포함</td></tr>
-  <tr><td>2</td><td>fareIncludedIcCardPriority</td><td>IC카드 요금 우선 사용</td></tr>
-  <tr><td>3</td><td>directRouteNoTransfers</td><td>직통 경로의 transfers 빈 배열</td></tr>
-  <tr><td>4</td><td>directRouteRailwayInfo</td><td>노선 ID, 일본어명, 영어명 정확성</td></tr>
-  <tr><td>5</td><td>directRouteDestination</td><td>행선지 역명 (일/영) 정확성</td></tr>
-  <tr><td>6</td><td>trainTypeIncluded</td><td>열차 종별 정보 존재</td></tr>
-  <tr><td>7</td><td>transferRoute</td><td>환승 경로의 환승 정보 포함</td></tr>
-  <tr><td>8</td><td>transferRouteRailwayInfo</td><td>환승 전후 노선 정보</td></tr>
-  <tr><td>9</td><td>noRouteFound</td><td>경로 없을 때 에러 없이 빈 결과</td></tr>
-  <tr><td>10</td><td>calendarTypeInResponse</td><td>Weekday/Saturday/Holiday 중 하나</td></tr>
-  <tr><td>11</td><td>noFareReturnsZero</td><td>요금 데이터 없으면 0원</td></tr>
-  <tr><td>12</td><td>timeFormat</td><td>HH:MM 포맷 검증 (정규식)</td></tr>
-</table>
-
-<h3>6.6 StationSearchServiceTest (7건)</h3>
-<table>
-  <tr><th>#</th><th>테스트명</th><th>검증</th></tr>
-  <tr><td>1</td><td>searchByEnglishName</td><td>"shibuya"로 渋谷 검색</td></tr>
-  <tr><td>2</td><td>searchByJapaneseName</td><td>"渋谷"으로 검색</td></tr>
-  <tr><td>3</td><td>partialMatch</td><td>"shib"으로 부분 일치</td></tr>
-  <tr><td>4</td><td>caseInsensitive</td><td>SHIBUYA = shibuya</td></tr>
-  <tr><td>5</td><td>noResults</td><td>없는 역명 → 빈 결과</td></tr>
-  <tr><td>6</td><td>maxResults</td><td>결과 20건 제한</td></tr>
-  <tr><td>7</td><td>sameNameDifferentLines</td><td>東京역 2개 노선 모두 반환</td></tr>
-</table>
-
-<h3>6.7 Controller 테스트 (7건)</h3>
-
-<h4>LastTrainControllerTest (4건)</h4>
-<table>
-  <tr><th>테스트</th><th>HTTP</th><th>검증</th></tr>
-  <tr><td>findLastTrainDirect</td><td>GET 200</td><td>직통 경로 JSON 구조 전체 검증</td></tr>
-  <tr><td>findLastTrainWithTransfer</td><td>GET 200</td><td>환승 경로 transfers 배열 검증</td></tr>
-  <tr><td>findLastTrainNoRoute</td><td>GET 200</td><td>빈 routes 배열</td></tr>
-  <tr><td>missingParams</td><td>GET 400</td><td>from/to 파라미터 누락</td></tr>
-</table>
-
-<h4>StationControllerTest (3건)</h4>
-<table>
-  <tr><th>테스트</th><th>HTTP</th><th>검증</th></tr>
-  <tr><td>searchStations</td><td>GET 200</td><td>stations 배열, 필드값 검증</td></tr>
-  <tr><td>searchWithoutQuery</td><td>GET 400</td><td>query 파라미터 누락</td></tr>
-  <tr><td>searchNoResults</td><td>GET 200</td><td>빈 stations 배열</td></tr>
-</table>
-</div>
-
-<!-- ============================================ -->
-<!-- 7. DEPLOY                                    -->
-<!-- ============================================ -->
-<div class="section" id="deploy">
-<h2>7. 배포 및 인프라</h2>
-
-<h3>7.1 AWS 배포 구성</h3>
-<div class="diagram">
-<pre style="background:none;border:none;text-align:left;padding:0;margin:0;">
-[사용자] → [Route 53] → [EC2 t3.large]
-                          ├── Nginx (SSL termination, Let's Encrypt)
-                          └── Spring Boot JAR (-Xmx4g)
-                              ├── React 정적 파일 (static/)
-                              ├── API 엔드포인트 (/api/)
-                              └── API 문서 (/docs/)
-</pre>
-</div>
-
-<table>
-  <tr><th>항목</th><th>구성</th><th>월 비용</th></tr>
-  <tr><td>EC2</td><td>t3.large (8GB RAM)</td><td>~$60</td></tr>
-  <tr><td>도메인</td><td>Route 53</td><td>~$1</td></tr>
-  <tr><td>SSL</td><td>Let's Encrypt</td><td>무료</td></tr>
-  <tr><td>검색 등록</td><td>Google Search Console</td><td>무료</td></tr>
-</table>
-
-<h3>7.2 성능 특성</h3>
-<table>
-  <tr><th>항목</th><th>수치</th></tr>
-  <tr><td>초기 로딩 (ODPT 데이터)</td><td>30~180초</td></tr>
-  <tr><td>역 검색 쿼리</td><td>1~5ms (메모리 조회)</td></tr>
-  <tr><td>막차 경로 탐색</td><td>50~500ms (RAPTOR 알고리즘)</td></tr>
-  <tr><td>메모리 사용량</td><td>300~500MB (전체 캐시)</td></tr>
-  <tr><td>외부 API 호출 (운영 중)</td><td>0회 (시작 시 1회만)</td></tr>
-</table>
-
-<h3>7.3 SEO 설정</h3>
-<ul>
-  <li><code>robots.txt</code> - 전체 허용 + sitemap 위치 명시</li>
-  <li><code>sitemap.xml</code> - 메인 페이지 + API 문서</li>
-  <li>OG 메타 태그 - 소셜 공유 최적화 (한국어/일본어/영어)</li>
-  <li>Google Search Console 등록 → Yahoo Japan 자동 반영</li>
-</ul>
-</div>
+  <footer>
+    Tokyo Last Train Finder · Technical Document v1 · 2026-05-03 · 데이터 출처: 公共交通オープンデータセンター (ODPT)
+  </footer>
+</section>
 
 </body>
 </html>
