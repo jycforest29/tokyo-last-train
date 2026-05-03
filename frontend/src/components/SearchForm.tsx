@@ -1,4 +1,5 @@
 import { useStationSearch } from '../hooks/useStationSearch';
+import { useHomeFavorite } from '../hooks/useHomeFavorite';
 import { useTranslation } from '../i18n/LanguageContext';
 import { StationInput } from './StationInput';
 import './SearchForm.css';
@@ -9,9 +10,12 @@ interface Props {
 }
 
 export function SearchForm({ onSearch, isLoading }: Props) {
-  const { t } = useTranslation();
+  const { t, stationName } = useTranslation();
   const fromSearch = useStationSearch();
   const toSearch = useStationSearch();
+  const { home, setHome, clearHome } = useHomeFavorite();
+  const destination = toSearch.selectedStation;
+  const isHome = !!destination && !!home && home.stationId === destination.stationId;
 
   const canSearch = fromSearch.selectedStation && toSearch.selectedStation && !isLoading;
 
@@ -69,6 +73,18 @@ export function SearchForm({ onSearch, isLoading }: Props) {
         selectStation={toSearch.selectStation}
         clearSelection={toSearch.clearSelection}
       />
+
+      {destination && (
+        <button
+          type="button"
+          className={`home-toggle${isHome ? ' is-active' : ''}`}
+          onClick={() => (isHome ? clearHome() : setHome(destination))}
+        >
+          {isHome
+            ? t('home.unset')
+            : t('home.set').replace('{station}', stationName(destination))}
+        </button>
+      )}
 
       <button
         type="submit"

@@ -45,7 +45,10 @@ export type TranslationKey =
   | 'alert.tooLate'
   | 'alert.denied'
   | 'alert.keepTabOpen'
-  | 'alert.notifBody';
+  | 'alert.notifBody'
+  | 'home.set'
+  | 'home.unset'
+  | 'home.saved';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   ja: {
@@ -94,6 +97,9 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'alert.denied': '通知が許可されていません',
     'alert.keepTabOpen': 'このタブを開いたままにしてください',
     'alert.notifBody': '{line} {dest}行 {time}発まで{n}分',
+    'home.set': '🏠 自宅に設定',
+    'home.unset': '🏠 自宅を解除',
+    'home.saved': '自宅: {station}',
   },
   en: {
     'app.title': 'Tokyo Last Train Finder',
@@ -141,6 +147,9 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'alert.denied': 'Notifications blocked',
     'alert.keepTabOpen': 'Keep this tab open',
     'alert.notifBody': '{line} bound for {dest} departs in {n} min ({time})',
+    'home.set': '🏠 Save as home',
+    'home.unset': '🏠 Remove home',
+    'home.saved': 'Home: {station}',
   },
   ko: {
     'app.title': '도쿄 막차 검색',
@@ -188,5 +197,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'alert.denied': '알림이 차단되어 있습니다',
     'alert.keepTabOpen': '이 탭을 열어두세요',
     'alert.notifBody': '{line} {dest}행 {time} 출발 {n}분 전',
+    'home.set': '🏠 자택으로 등록',
+    'home.unset': '🏠 자택 등록 해제',
+    'home.saved': '자택: {station}',
   },
 };
