@@ -53,7 +53,9 @@ export type TranslationKey =
   | 'gps.locating'
   | 'gps.denied'
   | 'gps.unsupported'
-  | 'gps.error';
+  | 'gps.error'
+  | 'quickLaunch.cta'
+  | 'quickLaunch.subtitle';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   ja: {
@@ -110,6 +112,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'gps.denied': '位置情報の使用が許可されていません',
     'gps.unsupported': 'このブラウザは位置情報に対応していません',
     'gps.error': '現在地を取得できませんでした',
+    'quickLaunch.cta': '📍🏠 今すぐ {home}へ',
+    'quickLaunch.subtitle': '現在地から終電を検索',
   },
   en: {
     'app.title': 'Tokyo Last Train Finder',
@@ -165,6 +169,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'gps.denied': 'Location access denied',
     'gps.unsupported': 'Geolocation not supported',
     'gps.error': 'Could not get your location',
+    'quickLaunch.cta': '📍🏠 Last train to {home}',
+    'quickLaunch.subtitle': 'From your current location',
   },
   ko: {
     'app.title': '도쿄 막차 검색',
@@ -220,5 +226,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'gps.denied': '위치 정보 접근이 거부되었습니다',
     'gps.unsupported': '브라우저가 위치 정보를 지원하지 않습니다',
     'gps.error': '현재 위치를 가져올 수 없습니다',
+    'quickLaunch.cta': '📍🏠 지금 {home}까지',
+    'quickLaunch.subtitle': '현재 위치에서 막차 검색',
   },
 };

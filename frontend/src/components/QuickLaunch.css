@@ -1,0 +1,47 @@
+.quick-launch {
+  margin: 0 0 1rem;
+  text-align: center;
+}
+
+.quick-launch-button {
+  width: 100%;
+  padding: 1rem 1.2rem;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  box-shadow: 0 4px 14px rgba(233, 69, 96, 0.25);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.15s ease;
+}
+
+.quick-launch-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(233, 69, 96, 0.32);
+}
+
+.quick-launch-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(233, 69, 96, 0.25);
+}
+
+.quick-launch-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.quick-launch-subtitle {
+  margin: 0.4rem 0 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.quick-launch-error {
+  margin: 0.4rem 0 0;
+  font-size: 0.75rem;
+  color: #b91c1c;
+}

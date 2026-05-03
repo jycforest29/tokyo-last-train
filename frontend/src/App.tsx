@@ -1,5 +1,6 @@
 import { Header } from './components/Header';
 import { SearchForm } from './components/SearchForm';
+import { QuickLaunch } from './components/QuickLaunch';
 import { RouteList } from './components/RouteList';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { Footer } from './components/Footer';
@@ -13,6 +14,7 @@ export default function App() {
     <div className="app">
       <div className="app-container">
         <Header />
+        <QuickLaunch onSearch={search} isLoading={isLoading} />
         <SearchForm onSearch={search} isLoading={isLoading} />
         {isLoading && <LoadingSpinner />}
         {error && (
