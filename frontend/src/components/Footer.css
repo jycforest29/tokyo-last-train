@@ -5,6 +5,15 @@
   text-align: center;
 }
 
+.footer-disclaimer {
+  margin: 0 auto 12px;
+  max-width: 720px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-primary, #ccc);
+  font-weight: 500;
+}
+
 .footer-attribution {
   margin: 0 auto;
   max-width: 720px;

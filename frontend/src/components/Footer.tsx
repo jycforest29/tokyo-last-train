@@ -5,6 +5,7 @@ export function Footer() {
   const { t } = useTranslation();
   return (
     <footer className="footer">
+      <p className="footer-disclaimer">{t('footer.disclaimer')}</p>
       <p className="footer-attribution">
         <a
           href="https://developer.odpt.org/"

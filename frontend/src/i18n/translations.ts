@@ -56,7 +56,8 @@ export type TranslationKey =
   | 'gps.error'
   | 'quickLaunch.cta'
   | 'quickLaunch.subtitle'
-  | 'footer.privacy';
+  | 'footer.privacy'
+  | 'footer.disclaimer';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   ja: {
@@ -116,6 +117,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'quickLaunch.cta': '📍🏠 今すぐ {home}へ',
     'quickLaunch.subtitle': '現在地から終電を検索',
     'footer.privacy': 'プライバシーポリシー',
+    'footer.disclaimer': '本サービスは参考情報です。実際の運行は各鉄道事業者の公式情報をご確認ください。',
   },
   en: {
     'app.title': 'Tokyo Last Train Finder',
@@ -174,6 +176,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'quickLaunch.cta': '📍🏠 Last train to {home}',
     'quickLaunch.subtitle': 'From your current location',
     'footer.privacy': 'Privacy',
+    'footer.disclaimer': 'This service provides reference information only. Please confirm actual operations with each rail operator.',
   },
   ko: {
     'app.title': '도쿄 막차 검색',
@@ -232,5 +235,6 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'quickLaunch.cta': '📍🏠 지금 {home}까지',
     'quickLaunch.subtitle': '현재 위치에서 막차 검색',
     'footer.privacy': '개인정보 처리 방침',
+    'footer.disclaimer': '본 서비스는 참고 정보입니다. 실제 운행은 각 철도 사업자의 공식 정보를 확인해 주세요.',
   },
 };
