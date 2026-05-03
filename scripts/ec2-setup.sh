@@ -58,10 +58,20 @@ sudo systemctl enable ${APP_NAME}
 
 echo "=== 6. Nginx 설정 ==="
 sudo tee /etc/nginx/conf.d/${APP_NAME}.conf > /dev/null << 'EOF'
+# 액세스 로그에서 쿼리 스트링을 제거한다.
+# /api/v1/stations/nearest?lat=&lng= 같은 GPS 좌표가 디스크에 남지 않도록 $request 대신 $uri를 사용.
+log_format mask_qs '$remote_addr - $remote_user [$time_local] '
+                   '"$request_method $uri $server_protocol" '
+                   '$status $body_bytes_sent '
+                   '"$http_referer" "$http_user_agent"';
+
 server {
     listen 80 default_server;
     # 도메인 발급 후 enable-https.sh가 server_name을 교체
     server_name _;
+
+    # http 컨텍스트의 기본 access_log를 이 server 한정으로 mask_qs 포맷으로 덮어씀
+    access_log /var/log/nginx/access.log mask_qs;
 
     root /var/www/tokyo-last-train;
     index index.html;
@@ -79,6 +89,17 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_read_timeout 180s;
+    }
+
+    # GPS 좌표 엔드포인트는 한층 더 보수적으로 액세스 로그 자체를 끔
+    location = /api/v1/stations/nearest {
+        access_log off;
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 30s;
     }
 
     # Actuator는 외부 노출 차단 (헬스체크는 localhost에서만 사용)
