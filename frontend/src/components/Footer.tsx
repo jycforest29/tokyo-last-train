@@ -16,6 +16,9 @@ export function Footer() {
         {' — '}
         {t('footer.attribution')}
       </p>
+      <p className="footer-links">
+        <a href="/privacy">{t('footer.privacy')}</a>
+      </p>
     </footer>
   );
 }

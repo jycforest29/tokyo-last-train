@@ -55,7 +55,8 @@ export type TranslationKey =
   | 'gps.unsupported'
   | 'gps.error'
   | 'quickLaunch.cta'
-  | 'quickLaunch.subtitle';
+  | 'quickLaunch.subtitle'
+  | 'footer.privacy';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   ja: {
@@ -114,6 +115,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'gps.error': '現在地を取得できませんでした',
     'quickLaunch.cta': '📍🏠 今すぐ {home}へ',
     'quickLaunch.subtitle': '現在地から終電を検索',
+    'footer.privacy': 'プライバシーポリシー',
   },
   en: {
     'app.title': 'Tokyo Last Train Finder',
@@ -171,6 +173,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'gps.error': 'Could not get your location',
     'quickLaunch.cta': '📍🏠 Last train to {home}',
     'quickLaunch.subtitle': 'From your current location',
+    'footer.privacy': 'Privacy',
   },
   ko: {
     'app.title': '도쿄 막차 검색',
@@ -228,5 +231,6 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'gps.error': '현재 위치를 가져올 수 없습니다',
     'quickLaunch.cta': '📍🏠 지금 {home}까지',
     'quickLaunch.subtitle': '현재 위치에서 막차 검색',
+    'footer.privacy': '개인정보 처리 방침',
   },
 };

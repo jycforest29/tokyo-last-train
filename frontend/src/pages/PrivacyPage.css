@@ -1,0 +1,56 @@
+.privacy-page {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 1.6rem 1.4rem 1.4rem;
+  margin-top: 1rem;
+  line-height: 1.7;
+}
+
+.privacy-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.8rem;
+}
+
+.privacy-intro {
+  margin: 0 0 1.5rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.privacy-section {
+  margin: 0 0 1.2rem;
+}
+
+.privacy-section-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.35rem;
+}
+
+.privacy-section-body {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.privacy-updated {
+  margin: 1.6rem 0 0.8rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.privacy-back {
+  display: inline-block;
+  font-size: 0.85rem;
+  color: var(--accent-secondary);
+  text-decoration: none;
+  margin-top: 0.4rem;
+}
+
+.privacy-back:hover {
+  text-decoration: underline;
+}

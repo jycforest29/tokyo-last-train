@@ -21,3 +21,18 @@
 .footer-attribution a:hover {
   color: var(--accent-primary, #4a9eff);
 }
+
+.footer-links {
+  margin: 8px auto 0;
+  font-size: 11px;
+  color: var(--text-secondary, #888);
+}
+
+.footer-links a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.footer-links a:hover {
+  color: var(--accent-secondary, #4a9eff);
+}
