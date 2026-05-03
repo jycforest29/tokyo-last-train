@@ -34,6 +34,35 @@ public class StationSearchServiceImpl implements StationSearchService {
         return new StationSearchResponse(stations);
     }
 
+    /**
+     * 입력 좌표에서 가장 가까운 역을 반환한다.
+     * 좌표는 메모리에서만 사용되며 로깅하지 않는다.
+     */
+    @Override
+    public StationInfo findNearestStation(double latitude, double longitude) {
+        OdptStation nearest = null;
+        double bestDistanceSq = Double.MAX_VALUE;
+
+        for (OdptStation s : cache.getAllStations()) {
+            Double sLat = s.latitude();
+            Double sLng = s.longitude();
+            if (sLat == null || sLng == null) continue;
+
+            // 가까운 역 비교만 하므로 정확한 haversine 대신 위경도 차이 제곱합으로 충분.
+            // (도쿄권은 위도가 거의 일정하므로 평면 근사 정확도도 적절.)
+            double dLat = sLat - latitude;
+            double dLng = sLng - longitude;
+            double distSq = dLat * dLat + dLng * dLng;
+
+            if (distSq < bestDistanceSq) {
+                bestDistanceSq = distSq;
+                nearest = s;
+            }
+        }
+
+        return nearest != null ? toStationInfo(nearest) : null;
+    }
+
     private StationInfo toStationInfo(OdptStation station) {
         String nameJa = station.title();
         String nameEn = getLocalizedName(station.stationTitle(), "en");
