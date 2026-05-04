@@ -35,7 +35,8 @@ class StationControllerTest {
                         "odpt.Railway:TokyoMetro.Ginza",
                         "銀座線", "Ginza Line", "긴자선",
                         "odpt.Operator:TokyoMetro",
-                        35.6580, 139.7016
+                        35.6580, 139.7016,
+                        true
                 )
         ));
 

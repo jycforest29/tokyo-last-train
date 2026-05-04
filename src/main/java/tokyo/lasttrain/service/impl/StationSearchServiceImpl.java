@@ -8,8 +8,11 @@ import tokyo.lasttrain.model.OdptRailway;
 import tokyo.lasttrain.model.OdptStation;
 import tokyo.lasttrain.service.StationSearchService;
 
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class StationSearchServiceImpl implements StationSearchService {
@@ -24,14 +27,25 @@ public class StationSearchServiceImpl implements StationSearchService {
     public StationSearchResponse search(String query) {
         List<String> stationIds = cache.searchStations(query);
 
-        List<StationInfo> stations = stationIds.stream()
+        List<StationInfo> raw = stationIds.stream()
                 .map(cache::getStation)
                 .filter(s -> s != null)
                 .map(this::toStationInfo)
                 .limit(20)
                 .toList();
 
-        return new StationSearchResponse(stations);
+        // 같은 일본어 역명끼리 묶고(첫 등장 순서 유지), 그 안에서 시간표 데이터 있는 것을 위로.
+        // 결과: 신주쿠3(✓) → 신주쿠1(⚠) → 신주쿠2(⚠) → 신조쿠(...) 처럼 그룹 내에서만 ⚠가 가라앉는다.
+        Map<String, List<StationInfo>> grouped = raw.stream()
+                .collect(Collectors.groupingBy(
+                        s -> s.nameJa() == null ? "" : s.nameJa(),
+                        LinkedHashMap::new,
+                        Collectors.toList()));
+        List<StationInfo> sorted = grouped.values().stream()
+                .flatMap(g -> g.stream().sorted(Comparator.comparing(StationInfo::hasTimetable).reversed()))
+                .toList();
+
+        return new StationSearchResponse(sorted);
     }
 
     /**
@@ -91,7 +105,8 @@ public class StationSearchServiceImpl implements StationSearchService {
                 railwayNameKo,
                 station.operator(),
                 station.latitude(),
-                station.longitude()
+                station.longitude(),
+                cache.hasTimetableForRailway(station.railway())
         );
     }
 

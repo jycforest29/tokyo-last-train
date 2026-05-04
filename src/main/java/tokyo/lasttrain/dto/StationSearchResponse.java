@@ -16,6 +16,7 @@ public record StationSearchResponse(
             String railwayNameKo,   // e.g. "긴자선"
             String operator,        // e.g. "odpt.Operator:TokyoMetro"
             Double latitude,
-            Double longitude
+            Double longitude,
+            boolean hasTimetable    // ODPT TrainTimetable 데이터 보유 여부
     ) {}
 }
