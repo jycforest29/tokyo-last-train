@@ -35,7 +35,8 @@ class LastTrainServiceTest {
     void setUp() throws Exception {
         cache = createMockCache();
         ReverseRaptorEngine engine = new ReverseRaptorEngine(cache);
-        service = new LastTrainServiceImpl(engine, cache);
+        service = new LastTrainServiceImpl(engine, cache,
+                new tokyo.lasttrain.cache.TrainInformationCache(null));
     }
 
     @Test

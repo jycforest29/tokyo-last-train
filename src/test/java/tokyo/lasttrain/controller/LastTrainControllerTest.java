@@ -41,9 +41,10 @@ class LastTrainControllerTest {
                         "Local",
                         "C駅", "Station C", null,
                         List.of(),
-                        200
+                        200, 210,
+                        null
                 )
-        ));
+        ), List.of(), null);
 
         when(lastTrainService.findLastTrain(from, to)).thenReturn(response);
 
@@ -75,13 +76,15 @@ class LastTrainControllerTest {
                         "E駅", "Station E", null,
                         List.of(new Transfer(
                                 "B駅", "Station B", null,
-                                "odpt.Railway:Test.LineA",
-                                "odpt.Railway:Test.LineB",
-                                "23:40"
+                                "odpt.Railway:Test.LineA", "テストA線", "Test Line A", null,
+                                "odpt.Railway:Test.LineB", "テストB線", "Test Line B", null,
+                                "23:35", "23:40", 5,
+                                "1", "2"
                         )),
-                        350
+                        350, 360,
+                        null
                 )
-        ));
+        ), List.of(), null);
 
         when(lastTrainService.findLastTrain(from, to)).thenReturn(response);
 
@@ -101,7 +104,7 @@ class LastTrainControllerTest {
         String to = "odpt.Station:Test.Y";
 
         when(lastTrainService.findLastTrain(from, to))
-                .thenReturn(new LastTrainResponse(from, to, "Weekday", List.of()));
+                .thenReturn(new LastTrainResponse(from, to, "Weekday", List.of(), List.of(), null));
 
         mockMvc.perform(get("/api/v1/last-train")
                         .param("from", from)
