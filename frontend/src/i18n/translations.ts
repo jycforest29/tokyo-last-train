@@ -57,7 +57,23 @@ export type TranslationKey =
   | 'quickLaunch.cta'
   | 'quickLaunch.subtitle'
   | 'footer.privacy'
-  | 'footer.disclaimer';
+  | 'footer.disclaimer'
+  | 'search.noResults'
+  | 'search.disabledHint'
+  | 'theme.toLight'
+  | 'theme.toDark'
+  | 'station.noTimetable'
+  | 'route.fareIc'
+  | 'route.fareTicket'
+  | 'transfer.wait'
+  | 'transfer.platform'
+  | 'alternatives.heading'
+  | 'alternatives.before'
+  | 'alternatives.after'
+  | 'taxi.heading'
+  | 'taxi.estimate'
+  | 'taxi.distance'
+  | 'taxi.nightNote';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   ja: {
@@ -118,6 +134,22 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'quickLaunch.subtitle': '現在地から終電を検索',
     'footer.privacy': 'プライバシーポリシー',
     'footer.disclaimer': '本サービスは参考情報です。実際の運行は各鉄道事業者の公式情報をご確認ください。',
+    'search.noResults': '該当する駅が見つかりません',
+    'search.disabledHint': '出発駅と到着駅を選択してください',
+    'theme.toLight': 'ライトモードに切替',
+    'theme.toDark': 'ダークモードに切替',
+    'station.noTimetable': 'この路線は時刻表データが提供されていません',
+    'route.fareIc': 'IC',
+    'route.fareTicket': '紙券',
+    'transfer.wait': '乗換待ち {n}分',
+    'transfer.platform': '{n}番線',
+    'alternatives.heading': '近隣駅の終電',
+    'alternatives.before': '{station}まで（一駅手前）',
+    'alternatives.after': '{station}まで（一駅先）',
+    'taxi.heading': '🚕 タクシー目安',
+    'taxi.estimate': '約 ¥{day} (深夜 約 ¥{night})',
+    'taxi.distance': '直線距離 約 {km} km',
+    'taxi.nightNote': '現在は深夜割増時間帯（22:00–05:00）',
   },
   en: {
     'app.title': 'Tokyo Last Train Finder',
@@ -177,6 +209,22 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'quickLaunch.subtitle': 'From your current location',
     'footer.privacy': 'Privacy',
     'footer.disclaimer': 'This service provides reference information only. Please confirm actual operations with each rail operator.',
+    'search.noResults': 'No matching station',
+    'search.disabledHint': 'Select both From and To stations',
+    'theme.toLight': 'Switch to light mode',
+    'theme.toDark': 'Switch to dark mode',
+    'station.noTimetable': 'Timetable data not available for this line',
+    'route.fareIc': 'IC',
+    'route.fareTicket': 'Ticket',
+    'transfer.wait': '{n} min wait',
+    'transfer.platform': 'Platform {n}',
+    'alternatives.heading': 'Last trains to nearby stations',
+    'alternatives.before': 'to {station} (one stop before)',
+    'alternatives.after': 'to {station} (one stop after)',
+    'taxi.heading': '🚕 Taxi estimate',
+    'taxi.estimate': '~¥{day} (~¥{night} late night)',
+    'taxi.distance': 'Straight-line ~{km} km',
+    'taxi.nightNote': 'Late-night surcharge in effect (22:00–05:00)',
   },
   ko: {
     'app.title': '도쿄 막차 검색',
@@ -236,5 +284,21 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'quickLaunch.subtitle': '현재 위치에서 막차 검색',
     'footer.privacy': '개인정보 처리 방침',
     'footer.disclaimer': '본 서비스는 참고 정보입니다. 실제 운행은 각 철도 사업자의 공식 정보를 확인해 주세요.',
+    'search.noResults': '일치하는 역이 없습니다',
+    'search.disabledHint': '출발역과 도착역을 선택하세요',
+    'theme.toLight': '라이트 모드로 전환',
+    'theme.toDark': '다크 모드로 전환',
+    'station.noTimetable': '이 노선은 시간표 데이터가 제공되지 않습니다',
+    'route.fareIc': 'IC',
+    'route.fareTicket': '지폐',
+    'transfer.wait': '환승 대기 {n}분',
+    'transfer.platform': '{n}번 플랫폼',
+    'alternatives.heading': '인접 역의 막차',
+    'alternatives.before': '{station}까지 (한 정거장 전)',
+    'alternatives.after': '{station}까지 (한 정거장 후)',
+    'taxi.heading': '🚕 택시 추정',
+    'taxi.estimate': '약 ¥{day} (심야 약 ¥{night})',
+    'taxi.distance': '직선거리 약 {km} km',
+    'taxi.nightNote': '현재 심야할증 시간대 (22:00–05:00)',
   },
 };

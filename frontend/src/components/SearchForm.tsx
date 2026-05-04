@@ -33,6 +33,7 @@ export function SearchForm({ onSearch, isLoading }: Props) {
   };
 
   const canSearch = fromSearch.selectedStation && toSearch.selectedStation && !isLoading;
+  const submitDisabledHint = canSearch ? undefined : t('search.disabledHint');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +49,12 @@ export function SearchForm({ onSearch, isLoading }: Props) {
       fromSearch.setStationDirectly(toStation);
       toSearch.setStationDirectly(fromStation);
     }
+  };
+
+  const handleHomeToggle = () => {
+    if (!destination) return;
+    if (isHome) clearHome();
+    else setHome(destination);
   };
 
   return (
@@ -107,7 +114,7 @@ export function SearchForm({ onSearch, isLoading }: Props) {
         <button
           type="button"
           className={`home-toggle${isHome ? ' is-active' : ''}`}
-          onClick={() => (isHome ? clearHome() : setHome(destination))}
+          onClick={handleHomeToggle}
         >
           {isHome
             ? t('home.unset')
@@ -119,6 +126,8 @@ export function SearchForm({ onSearch, isLoading }: Props) {
         type="submit"
         className="search-button"
         disabled={!canSearch}
+        title={submitDisabledHint}
+        aria-label={submitDisabledHint ?? t('search.submit')}
       >
         {isLoading ? (
           <span className="search-button-loading" />

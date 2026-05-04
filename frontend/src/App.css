@@ -8,6 +8,30 @@
   --accent-secondary: #0284c7;
   --border-color: #e2e5e9;
   --input-bg: #f9fafb;
+  --scrollbar-thumb: #ccc;
+  --scrollbar-thumb-hover: #aaa;
+  --shadow-soft: rgba(0, 0, 0, 0.1);
+  --hover-overlay: rgba(0, 0, 0, 0.04);
+}
+
+html[data-theme='dark'] {
+  --bg-primary: #0f1115;
+  --bg-secondary: #181b22;
+  --bg-card: #1d2129;
+  --text-primary: #ececf1;
+  --text-secondary: #9ca3af;
+  --accent-primary: #ff5c7a;
+  --accent-secondary: #38bdf8;
+  --border-color: #2a2f38;
+  --input-bg: #14171d;
+  --scrollbar-thumb: #3a3f4a;
+  --scrollbar-thumb-hover: #4d535f;
+  --shadow-soft: rgba(0, 0, 0, 0.5);
+  --hover-overlay: rgba(255, 255, 255, 0.05);
+}
+
+html {
+  color-scheme: light dark;
 }
 
 *,
@@ -63,10 +87,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #aaa;
+  background: var(--scrollbar-thumb-hover);
 }

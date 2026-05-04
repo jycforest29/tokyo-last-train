@@ -58,8 +58,21 @@ export function RouteCard({ route, index }: Props) {
         {route.trainType && (
           <span className="route-train-type">{route.trainType}</span>
         )}
-        <span className={`route-countdown route-countdown--${countdownTone}`}>{countdownLabel}</span>
-        <span className="route-fare">{formatFare(route.totalFare)}</span>
+        <span
+          className={`route-countdown route-countdown--${countdownTone}`}
+          aria-live="polite"
+          aria-atomic="true"
+        >{countdownLabel}</span>
+        <span className="route-fare">
+          <span className="route-fare-ic">
+            <span className="route-fare-tag">{t('route.fareIc')}</span>{formatFare(route.totalFare)}
+          </span>
+          {route.totalFareTicket > 0 && route.totalFareTicket !== route.totalFare && (
+            <span className="route-fare-ticket">
+              <span className="route-fare-tag">{t('route.fareTicket')}</span>{formatFare(route.totalFareTicket)}
+            </span>
+          )}
+        </span>
       </div>
 
       <div className="route-times">
@@ -85,6 +98,17 @@ export function RouteCard({ route, index }: Props) {
         <span className="route-line-dot" style={{ backgroundColor: color }} />
         <span className="route-line-name">{lineName}</span>
       </div>
+
+      {route.delay && route.delay.isDisruption && (
+        <div className="route-delay" role="alert">
+          <span className="route-delay-icon">⚠</span>
+          <span className="route-delay-text">
+            {language === 'en'
+              ? (route.delay.textEn ?? route.delay.textJa ?? '')
+              : (route.delay.textJa ?? route.delay.textEn ?? '')}
+          </span>
+        </div>
+      )}
 
       {destName && (
         <div className="route-destination">

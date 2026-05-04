@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Header } from './components/Header';
 import { SearchForm } from './components/SearchForm';
 import { QuickLaunch } from './components/QuickLaunch';
@@ -23,7 +23,26 @@ function useCurrentPath(): string {
 
 export default function App() {
   const path = useCurrentPath();
-  const { result, isLoading, error, search } = useLastTrain();
+  const { result, isLoading, error, search: rawSearch } = useLastTrain();
+  const didInitFromUrl = useRef(false);
+
+  const search = useCallback((from: string, to: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('from', from);
+    url.searchParams.set('to', to);
+    window.history.replaceState({}, '', url);
+    rawSearch(from, to);
+  }, [rawSearch]);
+
+  useEffect(() => {
+    if (didInitFromUrl.current) return;
+    didInitFromUrl.current = true;
+    if (window.location.pathname !== '/') return;
+    const params = new URLSearchParams(window.location.search);
+    const from = params.get('from');
+    const to = params.get('to');
+    if (from && to) rawSearch(from, to);
+  }, [rawSearch]);
 
   if (path === '/privacy') {
     return <PrivacyPage />;

@@ -21,11 +21,13 @@ export function StationInput({
   results, isLoading, selectedStation,
   selectStation, clearSelection,
 }: Props) {
-  const { stationName, stationNameSecondary, railwayName } = useTranslation();
+  const { t, stationName, stationNameSecondary, railwayName } = useTranslation();
   const [activeIndex, setActiveIndex] = useState(-1);
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+
+  const showEmpty = !selectedStation && !isLoading && query.trim().length > 0 && results.length === 0;
 
   useEffect(() => {
     setIsOpen(results.length > 0 && !selectedStation);
@@ -65,10 +67,11 @@ export function StationInput({
   if (selectedStation) {
     const primary = stationName(selectedStation);
     const secondary = stationNameSecondary(selectedStation);
+    const noData = !selectedStation.hasTimetable;
     return (
       <div className="station-input-wrapper">
         <label className="station-label">{label}</label>
-        <div className="station-chip">
+        <div className={`station-chip${noData ? ' station-chip--warn' : ''}`}>
           <span
             className="station-chip-dot"
             style={{ backgroundColor: getRailwayColor(selectedStation.railway) }}
@@ -80,6 +83,9 @@ export function StationInput({
             )}
           </span>
           <span className="station-chip-line">{railwayName(selectedStation)}</span>
+          {noData && (
+            <span className="station-chip-warn" title={t('station.noTimetable')} aria-label={t('station.noTimetable')}>⚠️</span>
+          )}
           <button
             type="button"
             className="station-chip-clear"
@@ -87,6 +93,9 @@ export function StationInput({
             aria-label="Clear"
           >&times;</button>
         </div>
+        {noData && (
+          <p className="station-warn-message" role="status">{t('station.noTimetable')}</p>
+        )}
       </div>
     );
   }
@@ -109,18 +118,23 @@ export function StationInput({
         />
         {isLoading && <span className="station-input-spinner" />}
       </div>
+      {showEmpty && (
+        <p className="station-empty" role="status">{t('search.noResults')}</p>
+      )}
       {isOpen && (
         <ul className="station-dropdown" ref={listRef} role="listbox">
           {results.map((station, i) => {
             const primary = stationName(station);
             const secondary = stationNameSecondary(station);
+            const noData = !station.hasTimetable;
             return (
               <li
                 key={station.stationId}
-                className={`station-dropdown-item ${i === activeIndex ? 'active' : ''}`}
+                className={`station-dropdown-item ${i === activeIndex ? 'active' : ''}${noData ? ' station-dropdown-item--warn' : ''}`}
                 onMouseDown={() => selectStation(station)}
                 role="option"
                 aria-selected={i === activeIndex}
+                title={noData ? t('station.noTimetable') : undefined}
               >
                 <span
                   className="station-dropdown-dot"
@@ -137,6 +151,9 @@ export function StationInput({
                     {railwayName(station)}
                   </div>
                 </div>
+                {noData && (
+                  <span className="station-dropdown-warn" aria-hidden="true">⚠️</span>
+                )}
               </li>
             );
           })}
