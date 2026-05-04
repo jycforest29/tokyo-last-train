@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import tokyo.lasttrain.config.OdptApiProperties;
+import tokyo.lasttrain.exception.OdptUnavailableException;
 
 import java.util.List;
 
@@ -35,18 +36,23 @@ public class OdptApiClient {
 
         log.info("Fetching ODPT dump: {}", rdfType);
 
-        byte[] body = webClient.get()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(byte[].class)
-                .block();
+        byte[] body;
+        try {
+            body = webClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToMono(byte[].class)
+                    .block();
+        } catch (Exception e) {
+            throw new OdptUnavailableException("Failed to fetch ODPT dump: " + rdfType, e);
+        }
 
         try {
             List<T> result = objectMapper.readValue(body, typeRef);
             log.info("Fetched {} {} records", result.size(), rdfType);
             return result;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse ODPT dump: " + rdfType, e);
+            throw new OdptUnavailableException("Failed to parse ODPT dump: " + rdfType, e);
         }
     }
 
@@ -57,16 +63,21 @@ public class OdptApiClient {
         String url = String.format("%s/%s?acl:consumerKey=%s&%s",
                 properties.baseUrl(), rdfType, properties.consumerKey(), queryParams);
 
-        byte[] body = webClient.get()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(byte[].class)
-                .block();
+        byte[] body;
+        try {
+            body = webClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToMono(byte[].class)
+                    .block();
+        } catch (Exception e) {
+            throw new OdptUnavailableException("Failed to fetch ODPT: " + rdfType, e);
+        }
 
         try {
             return objectMapper.readValue(body, typeRef);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse ODPT response: " + rdfType, e);
+            throw new OdptUnavailableException("Failed to parse ODPT response: " + rdfType, e);
         }
     }
 }

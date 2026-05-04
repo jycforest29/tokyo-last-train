@@ -46,7 +46,7 @@ public class StationController {
             @RequestParam("lat") double latitude,
             @RequestParam("lng") double longitude) {
         if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
-            return ResponseEntity.badRequest().build();
+            throw new IllegalArgumentException("lat must be in [-90,90] and lng in [-180,180]");
         }
         StationInfo result = stationSearchService.findNearestStation(latitude, longitude);
         if (result == null) {
