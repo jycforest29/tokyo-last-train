@@ -32,9 +32,39 @@
 
 .route-fare {
   margin-left: auto;
-  font-size: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.route-fare-ic {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.route-fare-ticket {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.route-fare-tag {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  background: var(--input-bg);
+  color: var(--text-secondary);
 }
 
 .route-times {
@@ -100,6 +130,28 @@
   color: var(--text-secondary);
   margin-bottom: 0.5rem;
   padding-left: 1.4rem;
+}
+
+.route-delay {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0.4rem 0;
+  padding: 0.5rem 0.75rem;
+  background: rgba(245, 158, 11, 0.12);
+  border-left: 3px solid #f59e0b;
+  border-radius: 4px;
+}
+
+.route-delay-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.route-delay-text {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  line-height: 1.4;
 }
 
 .route-destination-en {

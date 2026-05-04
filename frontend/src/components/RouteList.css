@@ -47,3 +47,62 @@
   margin: 0.3rem 0 0;
   opacity: 0.7;
 }
+
+.alternatives {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border-color);
+}
+
+.alternatives-heading {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 0 0.6rem;
+  letter-spacing: 0.02em;
+}
+
+.alternative-block {
+  margin-bottom: 0.75rem;
+}
+
+.alternative-label {
+  font-size: 0.75rem;
+  color: var(--accent-secondary);
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+}
+
+.taxi-hint {
+  margin-top: 1rem;
+  padding: 0.7rem 1rem;
+  background: var(--input-bg);
+  border-left: 3px solid var(--accent-primary);
+  border-radius: 6px;
+}
+
+.taxi-hint-heading {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.taxi-hint-fare {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.taxi-hint-distance {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  margin-top: 0.15rem;
+}
+
+.taxi-hint-night {
+  margin-top: 0.3rem;
+  font-size: 0.7rem;
+  color: var(--accent-primary);
+  font-weight: 500;
+}

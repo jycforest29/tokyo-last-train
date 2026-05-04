@@ -46,6 +46,60 @@ export function RouteList({ result }: Props) {
           <RouteCard key={i} route={route} index={i} />
         ))
       )}
+
+      {result.alternatives && result.alternatives.length > 0 && (
+        <Alternatives alternatives={result.alternatives} />
+      )}
+
+      {result.taxiEstimate && <TaxiHint estimate={result.taxiEstimate} />}
+    </div>
+  );
+}
+
+import type { Alternative, TaxiEstimate } from '../types';
+
+function TaxiHint({ estimate }: { estimate: TaxiEstimate }) {
+  const { t } = useTranslation();
+  return (
+    <div className="taxi-hint">
+      <div className="taxi-hint-heading">{t('taxi.heading')}</div>
+      <div className="taxi-hint-fare">
+        {t('taxi.estimate')
+          .replace('{day}', estimate.yenDay.toLocaleString())
+          .replace('{night}', estimate.yenNight.toLocaleString())}
+      </div>
+      <div className="taxi-hint-distance">
+        {t('taxi.distance').replace('{km}', estimate.distanceKm.toFixed(1))}
+      </div>
+      {estimate.nightSurchargeNow && (
+        <div className="taxi-hint-night">{t('taxi.nightNote')}</div>
+      )}
+    </div>
+  );
+}
+
+function Alternatives({ alternatives }: { alternatives: Alternative[] }) {
+  const { t, language } = useTranslation();
+  const stationName = (a: Alternative) =>
+    language === 'ko' ? (a.stationNameKo ?? a.stationNameJa)
+    : language === 'en' ? a.stationNameEn
+    : a.stationNameJa;
+
+  return (
+    <div className="alternatives">
+      <h3 className="alternatives-heading">{t('alternatives.heading')}</h3>
+      {alternatives.map(alt => {
+        const labelKey = alt.offsetFromDest < 0 ? 'alternatives.before' : 'alternatives.after';
+        const label = t(labelKey).replace('{station}', stationName(alt));
+        return (
+          <div key={alt.stationId} className="alternative-block">
+            <div className="alternative-label">{label}</div>
+            {alt.routes.map((route, i) => (
+              <RouteCard key={i} route={route} index={i} />
+            ))}
+          </div>
+        );
+      })}
     </div>
   );
 }

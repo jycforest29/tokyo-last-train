@@ -56,6 +56,46 @@
   color: var(--text-secondary);
 }
 
+.transfer-to-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.2rem;
+  padding: 0.15rem 0.5rem;
+  background: var(--input-bg);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--text-primary);
+}
+
+.transfer-to-line-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.transfer-to-line-name {
+  font-weight: 500;
+}
+
+.transfer-platform {
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  background: var(--accent-secondary);
+  color: white;
+  border-radius: 3px;
+}
+
+.transfer-wait {
+  margin-left: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--accent-primary);
+  font-weight: 500;
+}
+
 .transfer-time {
   font-size: 0.85rem;
   color: var(--text-secondary);

@@ -30,6 +30,8 @@ interface LanguageContextValue {
   ) => string;
   /** 환승역 역명. */
   transferStationName: (t: Transfer) => string;
+  /** 환승 후 노선명. 없으면 null. */
+  transferToRailwayName: (t: Transfer) => string | null;
   /** 행선지 (LastTrainRoute) 역명. */
   destinationName: (r: LastTrainRoute) => string;
 }
@@ -78,6 +80,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       return transfer.stationNameJa;
     };
 
+    const transferToRailwayName = (transfer: Transfer) => {
+      if (language === 'ko') return transfer.toRailwayNameKo ?? transfer.toRailwayNameJa;
+      if (language === 'en') return transfer.toRailwayNameEn ?? transfer.toRailwayNameJa;
+      return transfer.toRailwayNameJa;
+    };
+
     const destinationName = (route: LastTrainRoute) => {
       if (language === 'ko') return route.destinationNameKo ?? route.destinationNameJa;
       if (language === 'en') return route.destinationNameEn ?? route.destinationNameJa;
@@ -92,6 +100,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       stationNameSecondary,
       railwayName,
       transferStationName,
+      transferToRailwayName,
       destinationName,
     };
   }, [language]);
