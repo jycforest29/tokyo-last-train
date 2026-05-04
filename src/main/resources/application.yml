@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8082
 
 spring:
   task:
@@ -12,11 +12,17 @@ odpt:
     base-url: https://api.odpt.org/api/v4
     consumer-key: ${ODPT_API_KEY}
 
+admin:
+  token: ${ADMIN_TOKEN:}
+
 management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,prometheus
   endpoint:
     health:
-      show-details: never
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: tokyo-last-train

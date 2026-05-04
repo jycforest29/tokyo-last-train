@@ -83,7 +83,7 @@ server {
 
     # API 프록시
     location /api/ {
-        proxy_pass http://localhost:8080;
+        proxy_pass http://localhost:8082;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -94,7 +94,7 @@ server {
     # GPS 좌표 엔드포인트는 한층 더 보수적으로 액세스 로그 자체를 끔
     location = /api/v1/stations/nearest {
         access_log off;
-        proxy_pass http://localhost:8080;
+        proxy_pass http://localhost:8082;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

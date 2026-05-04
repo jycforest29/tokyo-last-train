@@ -24,7 +24,7 @@ systemctl restart ${SERVICE_NAME}
 # Actuator 헬스체크 — 캐시 로딩(약 2~3분) 완료 후 UP 반환
 echo "Waiting for application to become healthy..."
 for i in $(seq 1 48); do
-    if curl -sf http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+    if curl -sf http://localhost:8082/actuator/health | grep -q '"status":"UP"'; then
         echo "Application is healthy!"
         exit 0
     fi
