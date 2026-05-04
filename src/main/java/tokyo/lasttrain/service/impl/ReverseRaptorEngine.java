@@ -41,7 +41,11 @@ public class ReverseRaptorEngine {
      * @return 찾은 경로 목록 (라운드별 최적 경로). 빈 리스트면 경로 없음.
      */
     public List<Journey> findLastTrains(String fromStationId, String toStationId, String calendarId) {
-        log.info("Finding last train: {} → {}, calendar={}", fromStationId, toStationId, calendarId);
+        return findLastTrains(fromStationId, toStationId, Set.of(calendarId));
+    }
+
+    public List<Journey> findLastTrains(String fromStationId, String toStationId, Set<String> calendarIds) {
+        log.info("Finding last train: {} → {}, calendars={}", fromStationId, toStationId, calendarIds);
 
         // latestDeparture[stationId] = 해당 역에서 도착역까지 갈 수 있는 가장 늦은 출발 시각
         Map<String, TimeAndJourney> bestByStation = new HashMap<>();
@@ -68,7 +72,7 @@ public class ReverseRaptorEngine {
                 if (targetBest == null) continue;
 
                 // targetStation을 지나는 모든 열차 시간표를 찾아서 역방향 스캔
-                scanRoutesReverse(targetStation, targetBest, calendarId, bestByStation, newMarked);
+                scanRoutesReverse(targetStation, targetBest, calendarIds, bestByStation, newMarked);
             }
 
             // 2단계: 환승 확장 - 개선된 역에서 환승 가능한 역으로 전파
@@ -124,12 +128,12 @@ public class ReverseRaptorEngine {
     private void scanRoutesReverse(
             String targetStation,
             TimeAndJourney targetBest,
-            String calendarId,
+            Set<String> calendarIds,
             Map<String, TimeAndJourney> bestByStation,
             Set<String> newMarked
     ) {
         // targetStation을 지나는 열차 시간표를 인덱스에서 조회 (풀스캔 회피)
-        List<OdptTrainTimetable> timetables = cache.getTrainTimetablesForStation(targetStation, calendarId);
+        List<OdptTrainTimetable> timetables = cache.getTrainTimetablesForStation(targetStation, calendarIds);
 
         for (OdptTrainTimetable tt : timetables) {
             List<TrainStop> stops = tt.stops();
@@ -169,11 +173,12 @@ public class ReverseRaptorEngine {
 
                 if (existing == null || depTime.isAfter(existing.latestDeparture())) {
                     // 이 열차를 타면 더 늦게 출발 가능
-                    String targetTimeStr = stops.get(targetIdx).effectiveTime();
                     Leg leg = new Leg(
                             stationId, targetStation,
                             tt.railway(), tt.railDirection(), tt.trainType(), tt.trainNumber(),
-                            depTime, arrivalAtTarget
+                            depTime, arrivalAtTarget,
+                            stop.platformNumber(),
+                            stops.get(targetIdx).platformNumber()
                     );
 
                     List<Leg> legs = new ArrayList<>();
@@ -259,8 +264,16 @@ public class ReverseRaptorEngine {
             String trainType,
             String trainNumber,
             LocalTime departureTime,
-            LocalTime arrivalTime
+            LocalTime arrivalTime,
+            String fromPlatform,
+            String toPlatform
     ) {
+        public Leg(String fromStation, String toStation, String railway, String railDirection,
+                   String trainType, String trainNumber, LocalTime departureTime, LocalTime arrivalTime) {
+            this(fromStation, toStation, railway, railDirection, trainType, trainNumber,
+                    departureTime, arrivalTime, null, null);
+        }
+
         public boolean isTransfer() {
             return "TRANSFER".equals(railway);
         }

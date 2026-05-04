@@ -51,6 +51,15 @@ public class TransitDataCache {
     // 노선별 역 순서: railwayId → 정렬된 stationId 리스트
     private final Map<String, List<String>> railwayStationOrder = new ConcurrentHashMap<>();
 
+    // 시간표(TrainTimetable)가 존재하는 노선 집합. 로드 시 1회 계산.
+    private volatile Set<String> railwaysWithTimetable = Set.of();
+
+    // 캐시 갱신 상태 (HealthIndicator용)
+    private volatile java.time.Instant lastRefreshAt;
+    private volatile long lastRefreshDurationMs;
+    private volatile String lastRefreshError;
+    private final java.util.concurrent.atomic.AtomicInteger consecutiveFailures = new java.util.concurrent.atomic.AtomicInteger();
+
     public TransitDataCache(OdptApiClient apiClient, KoreanAliasDictionary koreanAliases) {
         this.apiClient = apiClient;
         this.koreanAliases = koreanAliases;
@@ -72,36 +81,53 @@ public class TransitDataCache {
         long start = System.currentTimeMillis();
         ready = false;
 
-        stationsById.clear();
-        railwaysById.clear();
-        trainTypesById.clear();
-        calendarsById.clear();
-        stationTimetables.clear();
-        trainTimetables.clear();
-        fares.clear();
-        nameIndex.clear();
-        stationToTrainTimetables.clear();
-        transferGraph.clear();
-        railwayStationOrder.clear();
+        try {
+            stationsById.clear();
+            railwaysById.clear();
+            trainTypesById.clear();
+            calendarsById.clear();
+            stationTimetables.clear();
+            trainTimetables.clear();
+            fares.clear();
+            nameIndex.clear();
+            stationToTrainTimetables.clear();
+            transferGraph.clear();
+            railwayStationOrder.clear();
 
-        loadStations();
-        loadRailways();
-        loadTrainTypes();
-        loadCalendars();
-        loadStationTimetables();
-        loadTrainTimetables();
-        loadFares();
-        buildNameIndex();
-        buildTransferGraph();
-        buildStationTrainTimetableIndex();
+            loadStations();
+            loadRailways();
+            loadTrainTypes();
+            loadCalendars();
+            loadStationTimetables();
+            loadTrainTimetables();
+            loadFares();
+            buildNameIndex();
+            buildTransferGraph();
+            buildStationTrainTimetableIndex();
+            buildRailwaysWithTimetable();
 
-        ready = true;
-        long elapsed = System.currentTimeMillis() - start;
-        log.info("=== ODPT data cache loaded in {}ms ===", elapsed);
-        log.info("Stations: {}, Railways: {}, StationTimetables: {}, TrainTimetables: {}, Fares: {}",
-                stationsById.size(), railwaysById.size(),
-                stationTimetables.size(), trainTimetables.size(), fares.size());
+            ready = true;
+            long elapsed = System.currentTimeMillis() - start;
+            this.lastRefreshAt = java.time.Instant.now();
+            this.lastRefreshDurationMs = elapsed;
+            this.lastRefreshError = null;
+            consecutiveFailures.set(0);
+            log.info("=== ODPT data cache loaded in {}ms ===", elapsed);
+            log.info("Stations: {}, Railways: {}, StationTimetables: {}, TrainTimetables: {}, Fares: {}",
+                    stationsById.size(), railwaysById.size(),
+                    stationTimetables.size(), trainTimetables.size(), fares.size());
+        } catch (RuntimeException e) {
+            this.lastRefreshError = e.getClass().getSimpleName() + ": " + e.getMessage();
+            consecutiveFailures.incrementAndGet();
+            log.error("Cache refresh failed (consecutiveFailures={})", consecutiveFailures.get(), e);
+            throw e;
+        }
     }
+
+    public java.time.Instant getLastRefreshAt() { return lastRefreshAt; }
+    public long getLastRefreshDurationMs() { return lastRefreshDurationMs; }
+    public String getLastRefreshError() { return lastRefreshError; }
+    public int getConsecutiveFailures() { return consecutiveFailures.get(); }
 
     private void loadStations() {
         List<OdptStation> list = apiClient.fetchDump("odpt:Station", new TypeReference<>() {});
@@ -192,6 +218,20 @@ public class TransitDataCache {
         if (koreanAliases == null) return null;
         OdptRailway r = railwaysById.get(railwayId);
         return r != null ? koreanAliases.railwayKo(r.title()) : null;
+    }
+
+    private void buildRailwaysWithTimetable() {
+        Set<String> set = trainTimetables.values().stream()
+                .map(OdptTrainTimetable::railway)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toUnmodifiableSet());
+        this.railwaysWithTimetable = set;
+        log.info("Railways with TrainTimetable data: {}", set.size());
+    }
+
+    /** 해당 노선이 ODPT TrainTimetable 데이터를 가지고 있는지. */
+    public boolean hasTimetableForRailway(String railwayId) {
+        return railwayId != null && railwaysWithTimetable.contains(railwayId);
     }
 
     private void buildStationTrainTimetableIndex() {
@@ -315,8 +355,16 @@ public class TransitDataCache {
      * 특정 역을 지나는 열차 시간표 중 특정 캘린더에 해당하는 것만 조회.
      */
     public List<OdptTrainTimetable> getTrainTimetablesForStation(String stationId, String calendarId) {
+        return getTrainTimetablesForStation(stationId, Set.of(calendarId));
+    }
+
+    /**
+     * 특정 역을 지나는 열차 시간표 중 주어진 캘린더 집합에 속하는 것만 조회.
+     */
+    public List<OdptTrainTimetable> getTrainTimetablesForStation(String stationId, Set<String> calendarIds) {
+        if (calendarIds == null || calendarIds.isEmpty()) return List.of();
         return getTrainTimetablesForStation(stationId).stream()
-                .filter(tt -> calendarId.equals(tt.calendar()))
+                .filter(tt -> tt.calendar() != null && calendarIds.contains(tt.calendar()))
                 .toList();
     }
 
@@ -333,28 +381,59 @@ public class TransitDataCache {
     }
 
     /**
-     * 오늘 날짜에 맞는 캘린더 ID를 반환한다.
-     * 평일/휴일/토요일 판별.
+     * 오늘 날짜에 매칭되는 일반 캘린더 ID들의 집합을 반환한다.
+     * ODPT의 {@code Specific.*} 캘린더는 사업자 다이어 변경 표지로만 의미가 있고
+     * TrainTimetable의 {@code odpt:calendar} 태그는 generic ID(Weekday/SaturdayHoliday/Holiday/Saturday/Sunday)
+     * 만 사용하므로 generic 집합을 union으로 반환해야 한 번에 모든 사업자 시간표가 매칭된다.
      */
-    public String resolveCalendar(java.time.LocalDate date) {
+    public Set<String> resolveCalendars(java.time.LocalDate date) {
+        boolean holiday = isJapaneseHoliday(date);
         java.time.DayOfWeek dow = date.getDayOfWeek();
-        String dateStr = date.toString();
 
-        // 특정 날짜가 지정된 캘린더가 있으면 우선
-        for (OdptCalendar cal : calendarsById.values()) {
-            if (cal.days() != null && cal.days().contains(dateStr)) {
-                return cal.id();
+        Set<String> out = new LinkedHashSet<>();
+        if (holiday || dow == java.time.DayOfWeek.SATURDAY || dow == java.time.DayOfWeek.SUNDAY) {
+            out.add("odpt.Calendar:Holiday");
+            out.add("odpt.Calendar:SaturdayHoliday");
+            if (dow == java.time.DayOfWeek.SATURDAY) out.add("odpt.Calendar:Saturday");
+            if (dow == java.time.DayOfWeek.SUNDAY) out.add("odpt.Calendar:Sunday");
+        } else {
+            out.add("odpt.Calendar:Weekday");
+            switch (dow) {
+                case MONDAY -> out.add("odpt.Calendar:Monday");
+                case TUESDAY -> out.add("odpt.Calendar:Tuesday");
+                case WEDNESDAY -> out.add("odpt.Calendar:Wednesday");
+                case THURSDAY -> out.add("odpt.Calendar:Thursday");
+                case FRIDAY -> out.add("odpt.Calendar:Friday");
+                default -> { /* unreachable */ }
             }
         }
+        out.add("odpt.Calendar:Everyday");
+        return out;
+    }
 
-        // 요일 기반 판별
-        return switch (dow) {
-            case SATURDAY -> calendarsById.containsKey("odpt.Calendar:SaturdayHoliday")
-                    ? "odpt.Calendar:SaturdayHoliday"
-                    : "odpt.Calendar:Holiday";
-            case SUNDAY -> "odpt.Calendar:Holiday";
-            default -> "odpt.Calendar:Weekday";
-        };
+    /**
+     * 일본 공휴일 판별. ODPT 일반 Calendar에는 days[]가 없어 자체 판단 불가하므로,
+     * Specific.*Holiday 캘린더가 해당 날짜를 포함하면 공휴일로 본다 (사업자 데이터 합치).
+     */
+    public boolean isJapaneseHoliday(java.time.LocalDate date) {
+        String dateStr = date.toString();
+        for (OdptCalendar cal : calendarsById.values()) {
+            if (cal.id() == null || cal.days() == null) continue;
+            if (!cal.id().contains("Holiday")) continue;
+            if (cal.days().contains(dateStr)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * 호환용 단일 ID 반환. 신규 코드는 {@link #resolveCalendars} 사용 권장.
+     * 평일 → Weekday, 토요일 → SaturdayHoliday, 일요일/공휴일 → Holiday.
+     */
+    public String resolveCalendar(java.time.LocalDate date) {
+        Set<String> set = resolveCalendars(date);
+        if (set.contains("odpt.Calendar:Weekday")) return "odpt.Calendar:Weekday";
+        if (date.getDayOfWeek() == java.time.DayOfWeek.SATURDAY) return "odpt.Calendar:SaturdayHoliday";
+        return "odpt.Calendar:Holiday";
     }
 
     public Collection<OdptStation> getAllStations() {

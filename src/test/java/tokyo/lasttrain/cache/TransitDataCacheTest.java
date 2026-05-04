@@ -75,33 +75,36 @@ class TransitDataCacheTest {
     }
 
     @Test
-    @DisplayName("특정 날짜가 지정된 캘린더가 있으면 우선 사용한다")
+    @DisplayName("Specific.*Holiday가 해당 날짜를 포함하면 평일이라도 Holiday로 매칭된다")
     void resolveCalendarSpecificDay() throws Exception {
-        // 2026-03-23(월요일)을 Holiday로 지정
+        // 2026-03-23(월요일)을 사업자 휴일 캘린더가 포함하면 일본 공휴일로 본다
         Map<String, OdptCalendar> calendars = new ConcurrentHashMap<>();
         calendars.put("odpt.Calendar:Weekday", new OdptCalendar("odpt.Calendar:Weekday",
                 "平日", Map.of(), null, null));
-        calendars.put("odpt.Calendar:SpecialHoliday", new OdptCalendar("odpt.Calendar:SpecialHoliday",
+        calendars.put("odpt.Calendar:Specific.Foo.Holiday", new OdptCalendar("odpt.Calendar:Specific.Foo.Holiday",
                 "特別休日", Map.of(), List.of("2026-03-23"), null));
         setField(cache, "calendarsById", calendars);
 
         LocalDate specialDay = LocalDate.of(2026, 3, 23);
-        assertEquals("odpt.Calendar:SpecialHoliday", cache.resolveCalendar(specialDay));
+        // resolveCalendars: generic Holiday 집합. Specific.* 는 결과 집합에 포함되지 않음.
+        Set<String> set = cache.resolveCalendars(specialDay);
+        assertTrue(set.contains("odpt.Calendar:Holiday"));
+        assertTrue(set.contains("odpt.Calendar:SaturdayHoliday"));
+        assertFalse(set.contains("odpt.Calendar:Weekday"));
+        assertFalse(set.stream().anyMatch(id -> id.contains("Specific")));
+        assertEquals("odpt.Calendar:Holiday", cache.resolveCalendar(specialDay));
     }
 
     @Test
-    @DisplayName("SaturdayHoliday 캘린더가 없으면 토요일은 Holiday로 fallback")
-    void resolveCalendarSaturdayFallback() throws Exception {
-        Map<String, OdptCalendar> calendars = new ConcurrentHashMap<>();
-        calendars.put("odpt.Calendar:Weekday", new OdptCalendar("odpt.Calendar:Weekday",
-                "平日", Map.of(), null, null));
-        calendars.put("odpt.Calendar:Holiday", new OdptCalendar("odpt.Calendar:Holiday",
-                "休日", Map.of(), null, null));
-        // SaturdayHoliday 없음
-        setField(cache, "calendarsById", calendars);
-
+    @DisplayName("토요일에는 Saturday/SaturdayHoliday/Holiday가 모두 결과 집합에 포함된다")
+    void resolveCalendarSaturdaySet() {
+        // 2026-03-28 = Saturday
         LocalDate saturday = LocalDate.of(2026, 3, 28);
-        assertEquals("odpt.Calendar:Holiday", cache.resolveCalendar(saturday));
+        Set<String> set = cache.resolveCalendars(saturday);
+        assertTrue(set.contains("odpt.Calendar:Saturday"));
+        assertTrue(set.contains("odpt.Calendar:SaturdayHoliday"));
+        assertTrue(set.contains("odpt.Calendar:Holiday"));
+        assertFalse(set.contains("odpt.Calendar:Weekday"));
     }
 
     // === searchStations ===
