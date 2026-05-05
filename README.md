@@ -2,6 +2,57 @@
 
 도쿄 수도권 전철망(지하철, JR, 사철)을 대상으로 출발역에서 도착역까지 **가장 늦게 출발할 수 있는 막차 경로**를 탐색하는 풀스택 웹 애플리케이션입니다.
 
+![Architecture](docs/architecture.png)
+
+## Live
+
+**🌐 https://shuden.tokyo** — 라이브 서비스 (도쿄 시간 기준)
+
+> 인프라: AWS EC2 (Seoul, ap-northeast-2) · Cloudflare Edge (Tokyo PoP) · Spring Boot + Nginx · 일본어 UI · PWA 설치 가능
+
+## Screenshots
+
+### 1. 메인 검색 화면
+![Main search](docs/screenshots/01-main.png)
+
+출발역·도착역을 입력하는 메인 폼.
+
+일본어를 디폴트(`lang="ja"`)로 일본인 사용자 대상.
+
+우상단에서 다크 모드 / 다국어(日本語/EN/한국어) 즉시 전환.
+
+### 2. 역명 자동완성
+![Station autocomplete](docs/screenshots/02-autocomplete.png)
+
+"渋谷" 입력 시 노선별로 분리된 결과 — 銀座線·副都心線·半蔵門線·埼京線·川越線 각 플랫폼이 색상 점과 함께 별도 항목으로 노출.
+
+시간표 데이터가 없는 역(예: 일부 사철)은 ⚠️ 표시.
+
+300ms 디바운스 + `AbortController`로 이전 요청 자동 취소.
+
+### 3. 막차 경로 결과 — 캘린더 자동 판별
+![Route list](docs/screenshots/03-routes.png)
+
+渋谷 → 東京 검색 결과.
+
+좌상단 **休日** 배지가 오늘이 공휴일임을 자동 감지 (こどもの日, ODPT `odpt:Calendar` 기반).
+
+카드에 출발 23:56 → 도착 0:05(翌日), IC 운임 ¥356 / 종이표 ¥360, 銀座線 → 赤坂見附에서 丸ノ内線으로 환승 1회, 막차까지 남은 시간 "あと11時間6分" 표시.
+
+### 4. 알림 + 택시 대안
+![Route detail](docs/screenshots/04-detail.png)
+
+같은 카드 하단 — **30/15/5분前 알림** 설정으로 막차 시간 다가올 때 브라우저 푸시.
+
+막차 놓쳤을 때 대비해 **タクシー目安 약 ¥3,300 (심야 약 ¥3,960)** 직선거리 8.0km 자동 계산.
+
+### 5. 다국어 즉시 전환
+![Korean UI](docs/screenshots/05-i18n.png)
+
+우상단 **한국어** 토글 한 번으로 전체 UI · ODPT 어트리뷰션 · 역명 보조 표기 모두 한국어로 전환.
+
+일본어/영어/한국어 3개 언어 지원, 첫 진입 시 브라우저 `Accept-Language`로 자동 감지.
+
 ## Features
 
 - **막차 경로 탐색** — 직통부터 최대 3회 환승까지, 가장 늦은 출발 시각의 최적 경로 도출
@@ -9,81 +60,6 @@
 - **상세 경로 정보** — 출발/도착 시각, 운행 노선, 열차 종별(각정/쾌속 등), 환승역, 도보 이동 시간
 - **요금 계산** — IC카드 기준 구간별 요금 자동 합산
 - **캘린더 자동 판별** — 평일/토요일/공휴일 시간표를 날짜 기반으로 자동 선택, Fallback 로직 포함
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        Frontend                             │
-│              React 19 + TypeScript + Vite                   │
-│                                                             │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
-│  │ StationInput │  │  SearchForm  │  │    RouteCard     │  │
-│  │ (autocomplete│  │              │  │  (route detail)  │  │
-│  │  + debounce) │  │              │  │                  │  │
-│  └──────┬───────┘  └──────┬───────┘  └──────────────────┘  │
-│         │                 │                                  │
-│  ┌──────┴─────────────────┴──────────────────────────────┐  │
-│  │  useStationSearch / useLastTrain (Custom Hooks)       │  │
-│  └──────────────────────┬────────────────────────────────┘  │
-│                         │ fetch(/api/v1/...)                 │
-└─────────────────────────┼───────────────────────────────────┘
-                          │ Vite proxy
-┌─────────────────────────┼───────────────────────────────────┐
-│                    Backend (port 8080)                       │
-│              Java 21 + Spring Boot 3.4.4                    │
-│                         │                                    │
-│  ┌──────────────────────┴────────────────────────────────┐  │
-│  │              REST Controllers                         │  │
-│  │  GET /api/v1/stations/search?query=...                │  │
-│  │  GET /api/v1/last-train?from=...&to=...               │  │
-│  └──────────────────────┬────────────────────────────────┘  │
-│                         │                                    │
-│  ┌──────────────────────┴────────────────────────────────┐  │
-│  │              Service Layer                            │  │
-│  │  ┌─────────────────────┐  ┌────────────────────────┐  │  │
-│  │  │ StationSearchService│  │   LastTrainService     │  │  │
-│  │  │ (name index lookup) │  │ (calendar resolution,  │  │  │
-│  │  │                     │  │  fare calculation)     │  │  │
-│  │  └─────────────────────┘  └───────────┬────────────┘  │  │
-│  │                                       │               │  │
-│  │  ┌────────────────────────────────────┴────────────┐  │  │
-│  │  │         Reverse RAPTOR Engine                   │  │  │
-│  │  │  - Round-based backward traversal               │  │  │
-│  │  │  - Transfer graph expansion per round           │  │  │
-│  │  │  - Midnight/early-morning time handling         │  │  │
-│  │  └────────────────────────────────────┬────────────┘  │  │
-│  └───────────────────────────────────────┼───────────────┘  │
-│                                          │                   │
-│  ┌───────────────────────────────────────┴───────────────┐  │
-│  │            TransitDataCache (In-Memory)               │  │
-│  │                                                       │  │
-│  │  ConcurrentHashMap-based indices:                     │  │
-│  │  - stationsById        (역 데이터)                     │  │
-│  │  - trainTimetables     (열차 시간표)                    │  │
-│  │  - nameIndex           (다국어 역명 검색)               │  │
-│  │  - transferGraph       (환승 그래프)                    │  │
-│  │  - stationToTrainTimetables (역별 시간표 역인덱스)      │  │
-│  │  - fares               (구간 요금)                     │  │
-│  └───────────────────────────────────────┬───────────────┘  │
-│                                          │ @PostConstruct    │
-└──────────────────────────────────────────┼──────────────────┘
-                                           │ WebClient (256MB buffer)
-                                           │ 30s connect / 3min read
-┌──────────────────────────────────────────┴──────────────────┐
-│                    ODPT API (v4)                             │
-│         https://api.odpt.org/api/v4                         │
-│                                                             │
-│  Dump endpoints:                                            │
-│  - odpt:Station          (전체 역)                          │
-│  - odpt:Railway          (전체 노선)                        │
-│  - odpt:TrainTimetable   (전체 열차 시간표)                  │
-│  - odpt:StationTimetable (전체 역 시간표)                    │
-│  - odpt:RailwayFare      (전체 구간 요금)                    │
-│  - odpt:TrainType        (열차 종별)                        │
-│  - odpt:Calendar         (운행 캘린더)                       │
-└─────────────────────────────────────────────────────────────┘
-```
 
 ## Reverse RAPTOR Algorithm
 
@@ -114,68 +90,6 @@ Round 3: Round 2 결과 + 환승 3회 확장
 | Frontend | React 19, TypeScript 5.9, Vite 8                        |
 | HTTP     | Reactor Netty (WebClient, 256MB buffer, redirect follow) |
 | Data     | ODPT API v4 (Dump API, 7 endpoints)                     |
-
-## Project Structure
-
-```
-tokyo-last-train/
-├── src/main/java/tokyo/lasttrain/
-│   ├── controller/
-│   │   ├── StationController.java      # GET /api/v1/stations/search
-│   │   └── LastTrainController.java    # GET /api/v1/last-train
-│   ├── service/
-│   │   ├── StationSearchService.java   # 역 검색 인터페이스
-│   │   ├── LastTrainService.java       # 막차 탐색 인터페이스
-│   │   └── impl/
-│   │       ├── StationSearchServiceImpl.java  # 역명 인덱스 기반 검색
-│   │       ├── LastTrainServiceImpl.java      # 캘린더 해석, 요금 계산, DTO 변환
-│   │       └── ReverseRaptorEngine.java       # 핵심 경로 탐색 알고리즘
-│   ├── model/                          # ODPT JSON → Java Record 매핑
-│   │   ├── OdptStation.java
-│   │   ├── OdptRailway.java
-│   │   ├── OdptTrainTimetable.java
-│   │   ├── OdptStationTimetable.java
-│   │   ├── OdptRailwayFare.java
-│   │   ├── OdptTrainType.java
-│   │   └── OdptCalendar.java
-│   ├── dto/
-│   │   ├── LastTrainResponse.java      # 경로 응답 (routes, transfers, fare)
-│   │   └── StationSearchResponse.java  # 역 검색 응답
-│   ├── cache/
-│   │   └── TransitDataCache.java       # 인메모리 캐시 + 인덱스 빌더
-│   ├── client/
-│   │   └── OdptApiClient.java          # ODPT Dump/Filter API 클라이언트
-│   └── config/
-│       ├── AppConfig.java              # WebClient 빈 (버퍼, 타임아웃)
-│       ├── OdptApiProperties.java      # application.yml 프로퍼티 바인딩
-│       └── WebConfig.java              # CORS 설정
-├── src/main/resources/
-│   └── application.yml                 # 서버 포트, ODPT API 설정
-├── frontend/
-│   ├── src/
-│   │   ├── App.tsx                     # 메인 레이아웃
-│   │   ├── types.ts                    # TypeScript 인터페이스 정의
-│   │   ├── components/
-│   │   │   ├── Header.tsx
-│   │   │   ├── SearchForm.tsx          # 출발역/도착역 입력 폼
-│   │   │   ├── StationInput.tsx        # 자동완성 드롭다운
-│   │   │   ├── RouteList.tsx           # 검색 결과 목록
-│   │   │   ├── RouteCard.tsx           # 개별 경로 카드
-│   │   │   ├── TransferStep.tsx        # 환승 정보 표시
-│   │   │   └── LoadingSpinner.tsx
-│   │   ├── hooks/
-│   │   │   ├── useStationSearch.ts     # 역 자동완성 (디바운스 + AbortController)
-│   │   │   └── useLastTrain.ts         # 막차 검색 상태 관리
-│   │   ├── api/
-│   │   │   └── client.ts              # fetch wrapper
-│   │   └── utils/
-│   │       ├── debounce.ts
-│   │       └── format.ts
-│   ├── vite.config.ts                  # 개발 서버 (3000) + API 프록시
-│   ├── tsconfig.json
-│   └── package.json
-└── pom.xml
-```
 
 ## Getting Started
 
