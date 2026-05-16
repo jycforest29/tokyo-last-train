@@ -16,6 +16,11 @@ export function useLastTrain() {
     try {
       const res = await findLastTrain(from, to);
       setResult(res);
+      window.gtag?.('event', 'last_train_search', {
+        from_station: from,
+        to_station: to,
+        route_count: res.routes.length,
+      });
     } catch {
       setError(t('error.searchFailed'));
     } finally {
