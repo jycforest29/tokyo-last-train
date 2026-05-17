@@ -8,7 +8,8 @@ public record LastTrainResponse(
         String calendarType,        // "Weekday" or "Holiday"
         List<LastTrainRoute> routes,
         List<Alternative> alternatives,    // 같은 노선의 인접 역으로 가는 대안 (없으면 빈 리스트)
-        TaxiEstimate taxiEstimate          // 두 역 모두 위경도 데이터가 있을 때만 채워짐 (없으면 null)
+        TaxiEstimate taxiEstimate,         // 두 역 모두 위경도 데이터가 있을 때만 채워짐 (없으면 null)
+        String notice                      // 출발=도착 등 경로 조회가 불가능한 사유 코드 (정상 응답이면 null). 예: "SAME_STATION"
 ) {
     /**
      * 도쿄 택시 운임 추정. 막차를 놓쳤거나 환승이 빠듯할 때 참고용.

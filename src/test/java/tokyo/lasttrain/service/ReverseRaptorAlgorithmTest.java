@@ -10,7 +10,6 @@ import tokyo.lasttrain.service.impl.ReverseRaptorEngine.Journey;
 import tokyo.lasttrain.service.impl.ReverseRaptorEngine.Leg;
 
 import java.lang.reflect.Field;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -49,7 +48,7 @@ class ReverseRaptorAlgorithmTest {
             fb.addRailway("Line1", "1선", "A", "B");
             fb.addTrain("Line1", "t1", "A:22:00", "B:22:30");
             fb.addTrain("Line1", "t2", "A:23:00", "B:23:30");
-            fb.addTrain("Line1", "t3", "A:23:50", "B:00:20");
+            fb.addTrain("Line1", "t3", "A:23:50", "B:24:20");
 
             TransitDataCache cache = fb.build();
             ReverseRaptorEngine engine = new ReverseRaptorEngine(cache);
@@ -58,7 +57,7 @@ class ReverseRaptorAlgorithmTest {
 
             assertFalse(journeys.isEmpty());
             // 23:50 출발이 선택되어야 함 (마지막 열차)
-            assertEquals(LocalTime.of(23, 50), journeys.getFirst().departureTime());
+            assertEquals(23 * 60 + 50, journeys.getFirst().departureMinutes());
         }
 
         @Test
@@ -90,7 +89,7 @@ class ReverseRaptorAlgorithmTest {
             assertFalse(journeys.isEmpty());
             Journey best = journeys.getFirst();
             // 가장 늦게 출발하는 경로 = 환승 23:00
-            assertEquals(LocalTime.of(23, 0), best.departureTime());
+            assertEquals(23 * 60, best.departureMinutes());
             assertTrue(best.transferCount() > 0, "환승이 더 늦게 출발하면 환승이 선택됨");
         }
     }
@@ -136,20 +135,14 @@ class ReverseRaptorAlgorithmTest {
 
             // 노선 순서: L1 → L2 → L3
             assertEquals("L1-fixture", rides.get(0).railway().substring(rides.get(0).railway().length() - 10));
-            // 시간 순서 일관성
+            // 시간 순서 일관성: service-day 분 단위라 단순 비교로 충분
             for (int i = 0; i < best.legs().size() - 1; i++) {
                 Leg cur = best.legs().get(i);
                 Leg next = best.legs().get(i + 1);
-                assertFalse(cur.arrivalTime().isAfter(next.departureTime().plusMinutes(1))
-                                && !crossesMidnight(cur.arrivalTime(), next.departureTime()),
-                        "leg 간 시간 순서가 정상이어야 함 (cur.arr=" + cur.arrivalTime()
-                                + ", next.dep=" + next.departureTime() + ")");
+                assertTrue(cur.arrivalMinutes() <= next.departureMinutes() + 1,
+                        "leg 간 시간 순서가 정상이어야 함 (cur.arr=" + cur.arrivalMinutes()
+                                + ", next.dep=" + next.departureMinutes() + ")");
             }
-        }
-
-        private boolean crossesMidnight(LocalTime a, LocalTime b) {
-            // 자정 넘김 (예: 23:50 → 00:10)
-            return a.isAfter(LocalTime.of(20, 0)) && b.isBefore(LocalTime.of(4, 0));
         }
     }
 
@@ -206,8 +199,7 @@ class ReverseRaptorAlgorithmTest {
             Leg transferLeg = best.legs().stream().filter(Leg::isTransfer).findFirst().orElseThrow();
 
             // 환승 leg는 5분 차이
-            long minutes = java.time.Duration.between(
-                    transferLeg.departureTime(), transferLeg.arrivalTime()).toMinutes();
+            int minutes = transferLeg.arrivalMinutes() - transferLeg.departureMinutes();
             assertEquals(5, minutes, "환승 leg는 5분 도보로 모델링됨");
         }
     }
@@ -235,9 +227,9 @@ class ReverseRaptorAlgorithmTest {
             assertFalse(journeys.isEmpty(), "24:30 표기 열차도 찾아야 함");
 
             Journey best = journeys.getFirst();
-            assertEquals(LocalTime.of(23, 50), best.departureTime());
-            // 도착 시각은 00:30으로 정규화
-            assertEquals(LocalTime.of(0, 30), best.arrivalTime());
+            assertEquals(23 * 60 + 50, best.departureMinutes());
+            // 도착 시각은 24:30 (service-day 분으로 1470)으로 보존된다.
+            assertEquals(24 * 60 + 30, best.arrivalMinutes());
         }
     }
 
@@ -301,10 +293,10 @@ class ReverseRaptorAlgorithmTest {
             // 알고리즘은 더 이른 ride (early, 21:30)를 골라야 함.
             assertFalse(journeys.isEmpty(), "이른 열차로라도 도달 가능해야 함");
             Journey best = journeys.getFirst();
-            assertTrue(best.departureTime().isBefore(LocalTime.of(22, 0))
-                            || !best.legs().stream().anyMatch(Leg::isTransfer),
+            assertTrue(best.departureMinutes() < 22 * 60
+                            || best.legs().stream().noneMatch(Leg::isTransfer),
                     "버퍼 부족 환승은 채택되지 않아야 함 (실제: dep="
-                            + best.departureTime() + ", legs=" + best.legs().size() + ")");
+                            + best.departureMinutes() + ", legs=" + best.legs().size() + ")");
         }
     }
 
@@ -333,9 +325,9 @@ class ReverseRaptorAlgorithmTest {
             Journey best = journeys.getFirst();
             for (Leg leg : best.legs()) {
                 if (leg.isTransfer()) continue;
-                assertTrue(leg.departureTime().isBefore(leg.arrivalTime())
-                                || isAfterMidnightArrival(leg),
-                        "ride leg는 dep < arr (또는 자정 넘김): " + leg);
+                // service-day 분 표현에서는 24:30 같은 익일 도착도 단조 증가이므로 단순 비교로 충분.
+                assertTrue(leg.departureMinutes() < leg.arrivalMinutes(),
+                        "ride leg는 dep < arr: " + leg);
             }
         }
 
@@ -362,11 +354,6 @@ class ReverseRaptorAlgorithmTest {
             Journey best = journeys.getFirst();
             assertEquals(fb.id("A"), best.legs().getFirst().fromStation());
             assertEquals(fb.id("C"), best.legs().getLast().toStation());
-        }
-
-        private boolean isAfterMidnightArrival(Leg leg) {
-            return leg.arrivalTime().isBefore(LocalTime.of(4, 0))
-                    && leg.departureTime().isAfter(LocalTime.of(20, 0));
         }
     }
 

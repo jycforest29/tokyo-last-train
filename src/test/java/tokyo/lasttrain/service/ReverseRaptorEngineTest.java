@@ -10,7 +10,6 @@ import tokyo.lasttrain.service.impl.ReverseRaptorEngine.Journey;
 import tokyo.lasttrain.service.impl.ReverseRaptorEngine.Leg;
 
 import java.lang.reflect.Field;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -63,7 +62,7 @@ class ReverseRaptorEngineTest {
         assertEquals(0, best.transferCount(), "환승 없는 직통이어야 한다");
 
         // 마지막 열차(23:30 출발)가 선택되어야 함
-        assertEquals("23:30", best.departureTime().toString());
+        assertEquals(23 * 60 + 30, best.departureMinutes());
     }
 
     @Test
@@ -113,7 +112,7 @@ class ReverseRaptorEngineTest {
         assertFalse(journeys.isEmpty());
         Journey best = journeys.getFirst();
         // 23:00 열차와 23:30 열차 중 23:30이 선택되어야 함
-        assertEquals("23:30", best.departureTime().toString());
+        assertEquals(23 * 60 + 30, best.departureMinutes());
     }
 
     @Test
@@ -156,35 +155,33 @@ class ReverseRaptorEngineTest {
     }
 
     @Test
-    @DisplayName("Journey.departureTime()과 arrivalTime() 계산 검증")
+    @DisplayName("Journey.departureMinutes()와 arrivalMinutes() 계산 검증")
     void journeyTimeMethods() {
         List<Journey> journeys = engine.findLastTrains(STATION_A, STATION_C, WEEKDAY);
 
         assertFalse(journeys.isEmpty());
         Journey best = journeys.getFirst();
 
-        // departureTime은 첫 번째 leg의 출발 시각
-        assertNotNull(best.departureTime());
-        assertTrue(best.departureTime().isAfter(LocalTime.of(22, 0)));
-
-        // arrivalTime은 마지막 leg의 도착 시각
-        assertNotNull(best.arrivalTime());
+        // departureMinutes는 첫 번째 leg의 출발 시각 (service-day 분)
+        assertTrue(best.departureMinutes() > 22 * 60);
+        // arrivalMinutes는 마지막 leg의 도착 시각
+        assertTrue(best.arrivalMinutes() > best.departureMinutes());
     }
 
     @Test
-    @DisplayName("빈 Journey의 departureTime/arrivalTime은 LocalTime.MIN")
+    @DisplayName("빈 Journey의 시각은 0")
     void emptyJourneyTime() {
         Journey empty = new Journey("A", "A", List.of());
-        assertEquals(LocalTime.MIN, empty.departureTime());
-        assertEquals(LocalTime.MIN, empty.arrivalTime());
+        assertEquals(0, empty.departureMinutes());
+        assertEquals(0, empty.arrivalMinutes());
         assertEquals(0, empty.transferCount());
     }
 
     @Test
     @DisplayName("Leg.isTransfer()는 railway가 TRANSFER일 때만 true")
     void legIsTransfer() {
-        Leg rideLeg = new Leg("A", "B", LINE_A, null, null, null, LocalTime.of(23, 0), LocalTime.of(23, 15));
-        Leg transferLeg = new Leg("B", "B'", "TRANSFER", null, null, null, LocalTime.of(23, 15), LocalTime.of(23, 20));
+        Leg rideLeg = new Leg("A", "B", LINE_A, null, null, null, 23 * 60, 23 * 60 + 15);
+        Leg transferLeg = new Leg("B", "B'", "TRANSFER", null, null, null, 23 * 60 + 15, 23 * 60 + 20);
 
         assertFalse(rideLeg.isTransfer());
         assertTrue(transferLeg.isTransfer());
@@ -223,8 +220,7 @@ class ReverseRaptorEngineTest {
 
         for (int i = 0; i < journeys.size() - 1; i++) {
             assertTrue(
-                    journeys.get(i).departureTime().isAfter(journeys.get(i + 1).departureTime())
-                            || journeys.get(i).departureTime().equals(journeys.get(i + 1).departureTime()),
+                    journeys.get(i).departureMinutes() >= journeys.get(i + 1).departureMinutes(),
                     "결과는 출발 시간 내림차순이어야 한다"
             );
         }
@@ -262,12 +258,12 @@ class ReverseRaptorEngineTest {
                         trainStop(null, null, "23:30", STATION_C)
                 )));
 
-        // LineA 열차 2 (막차): A(23:30) → B(23:45) → C(00:00)
+        // LineA 열차 2 (막차): A(23:30) → B(23:45) → C(24:00, 익일 0시 ODPT 관습 표기)
         trainTimetables.put("tt-lineA-2", trainTimetable("tt-lineA-2", LINE_A, WEEKDAY, "102",
                 List.of(
                         trainStop(STATION_A, "23:30", null),
                         trainStop(STATION_B_LINE_A, "23:45", "23:45"),
-                        trainStop(null, null, "00:00", STATION_C)
+                        trainStop(null, null, "24:00", STATION_C)
                 )));
 
         // LineB 열차 1: D(23:00) → B(23:20) → E(23:40)
@@ -278,12 +274,12 @@ class ReverseRaptorEngineTest {
                         trainStop(null, null, "23:40", STATION_E)
                 )));
 
-        // LineB 열차 2 (막차): D(23:30) → B(23:50) → E(00:10)
+        // LineB 열차 2 (막차): D(23:30) → B(23:50) → E(24:10, 익일 0:10 ODPT 관습 표기)
         trainTimetables.put("tt-lineB-2", trainTimetable("tt-lineB-2", LINE_B, WEEKDAY, "202",
                 List.of(
                         trainStop(STATION_D, "23:30", null),
                         trainStop(STATION_B_LINE_B, "23:50", "23:50"),
-                        trainStop(null, null, "00:10", STATION_E)
+                        trainStop(null, null, "24:10", STATION_E)
                 )));
 
         setField(mockCache, "trainTimetables", trainTimetables);

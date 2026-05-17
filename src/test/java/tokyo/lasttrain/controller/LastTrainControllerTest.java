@@ -44,7 +44,7 @@ class LastTrainControllerTest {
                         200, 210,
                         null
                 )
-        ), List.of(), null);
+        ), List.of(), null, null);
 
         when(lastTrainService.findLastTrain(from, to)).thenReturn(response);
 
@@ -84,7 +84,7 @@ class LastTrainControllerTest {
                         350, 360,
                         null
                 )
-        ), List.of(), null);
+        ), List.of(), null, null);
 
         when(lastTrainService.findLastTrain(from, to)).thenReturn(response);
 
@@ -104,7 +104,7 @@ class LastTrainControllerTest {
         String to = "odpt.Station:Test.Y";
 
         when(lastTrainService.findLastTrain(from, to))
-                .thenReturn(new LastTrainResponse(from, to, "Weekday", List.of(), List.of(), null));
+                .thenReturn(new LastTrainResponse(from, to, "Weekday", List.of(), List.of(), null, null));
 
         mockMvc.perform(get("/api/v1/last-train")
                         .param("from", from)

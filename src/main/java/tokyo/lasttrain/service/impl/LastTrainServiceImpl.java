@@ -52,14 +52,23 @@ public class LastTrainServiceImpl implements LastTrainService {
         Set<String> calendarIds = cache.resolveCalendars(today);
         log.info("Resolved calendars for {}: {}", today, calendarIds);
 
+        // 출발지와 도착지가 같으면 경로 조회 자체가 의미 없음. 명시적 notice로 알려준다.
+        if (fromStationId != null && fromStationId.equals(toStationId)) {
+            return new LastTrainResponse(fromStationId, toStationId, calendarTypeLabel(calendarIds),
+                    List.of(), List.of(), null, "SAME_STATION");
+        }
+
         List<LastTrainRoute> routes = raptorEngine.findLastTrains(fromStationId, toStationId, calendarIds)
-                .stream().map(this::toRoute).toList();
+                .stream()
+                .filter(LastTrainServiceImpl::isWellOrderedJourney)
+                .map(this::toRoute)
+                .toList();
 
         List<Alternative> alternatives = computeAlternatives(fromStationId, toStationId, calendarIds, routes);
         TaxiEstimate taxi = computeTaxiEstimate(fromStationId, toStationId);
 
         return new LastTrainResponse(fromStationId, toStationId, calendarTypeLabel(calendarIds),
-                routes, alternatives, taxi);
+                routes, alternatives, taxi, null);
     }
 
     /**
@@ -124,7 +133,9 @@ public class LastTrainServiceImpl implements LastTrainService {
             if (neighborId.equals(from)) continue;
 
             List<LastTrainRoute> neighborRoutes = raptorEngine.findLastTrains(from, neighborId, calendarIds)
-                    .stream().map(this::toRoute)
+                    .stream()
+                    .filter(LastTrainServiceImpl::isWellOrderedJourney)
+                    .map(this::toRoute)
                     .filter(r -> !primaryFirstLegKeys.contains(r.railway() + "|" + r.departureTime()))
                     .limit(2)
                     .toList();
@@ -201,16 +212,16 @@ public class LastTrainServiceImpl implements LastTrainService {
             String[] fromNames = railwayNames(fromRailway);
             String[] toNames = railwayNames(toRailway);
 
-            LocalTime arr = prevRide != null ? prevRide.arrivalTime() : null;
-            LocalTime dep = nextRide != null ? nextRide.departureTime() : null;
+            Integer arr = prevRide != null ? prevRide.arrivalMinutes() : null;
+            Integer dep = nextRide != null ? nextRide.departureMinutes() : null;
             int waitMinutes = computeWaitMinutes(arr, dep);
 
             transfers.add(new Transfer(
                     tsNameJa, tsNameEn, tsNameKo,
                     fromRailway, fromNames[0], fromNames[1], fromNames[2],
                     toRailway, toNames[0], toNames[1], toNames[2],
-                    arr != null ? arr.toString() : null,
-                    dep != null ? dep.toString() : null,
+                    formatMinutes(arr),
+                    formatMinutes(dep),
                     waitMinutes,
                     prevRide != null ? prevRide.toPlatform() : null,
                     nextRide != null ? nextRide.fromPlatform() : null
@@ -224,8 +235,8 @@ public class LastTrainServiceImpl implements LastTrainService {
         DelayInfo delay = buildDelayInfo(firstRide.railway());
 
         return new LastTrainRoute(
-                journey.departureTime().toString(),
-                journey.arrivalTime().toString(),
+                formatMinutes(journey.departureMinutes()),
+                formatMinutes(journey.arrivalMinutes()),
                 firstRide.railway(),
                 railwayNameJa,
                 railwayNameEn,
@@ -276,13 +287,31 @@ public class LastTrainServiceImpl implements LastTrainService {
         return total;
     }
 
-    /** 환승 도착 → 다음 출발 사이의 분 단위 대기 시간. 240분 초과는 자정 경계의 비정상 값으로 보고 0 반환. */
-    private static int computeWaitMinutes(LocalTime arr, LocalTime dep) {
+    /**
+     * 환승 도착 → 다음 출발 사이의 분 단위 대기 시간.
+     * 시각은 service-day 분이라 단순 뺄셈이면 충분. 음수/240분 초과는 비정상으로 0 반환.
+     */
+    private static int computeWaitMinutes(Integer arr, Integer dep) {
         if (arr == null || dep == null) return 0;
-        int diff = (dep.toSecondOfDay() - arr.toSecondOfDay()) / 60;
-        if (diff < 0) diff += 24 * 60;
-        if (diff > 240) return 0;
+        int diff = dep - arr;
+        if (diff < 0 || diff > 240) return 0;
         return diff;
+    }
+
+    /** service-day 분(int)을 "HH:mm"으로 변환. 자정 넘김은 mod 24h로 일반 시계 표기에 맞춘다. */
+    private static String formatMinutes(Integer minutes) {
+        if (minutes == null) return null;
+        int total = ((minutes % (24 * 60)) + 24 * 60) % (24 * 60);
+        return String.format("%02d:%02d", total / 60, total % 60);
+    }
+
+    /**
+     * 방어 필터: arrivalMinutes가 departureMinutes보다 엄밀히 큰 경로만 통과.
+     * 엔진 회귀 시에도 잘못된 route가 응답에 노출되지 않도록 하는 안전망.
+     */
+    private static boolean isWellOrderedJourney(Journey journey) {
+        if (journey == null || journey.legs().isEmpty()) return false;
+        return journey.arrivalMinutes() > journey.departureMinutes();
     }
 
     /** {ja, en, ko} 3-tuple for railway names. null elements if unknown. */

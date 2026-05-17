@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <root level="WARN">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- 핫패스 로깅을 WARN으로 낮춰 대규모 페어 검증 시 I/O 오버헤드 제거. -->
+    <logger name="tokyo.lasttrain.service.impl" level="WARN"/>
+    <logger name="tokyo.lasttrain.cache" level="WARN"/>
+    <logger name="tokyo.lasttrain.controller" level="WARN"/>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.hibernate" level="WARN"/>
+
+    <!-- 테스트 진척도는 보이도록 INFO 유지. -->
+    <logger name="tokyo.lasttrain.integration" level="INFO"/>
+</configuration>

@@ -4,30 +4,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import tokyo.lasttrain.cache.TransitDataCache;
-import tokyo.lasttrain.model.OdptRailway;
 import tokyo.lasttrain.model.OdptTrainTimetable;
 import tokyo.lasttrain.model.OdptTrainTimetable.TrainStop;
 
-import java.time.LocalTime;
 import java.util.*;
 
 /**
  * Reverse RAPTOR: 도착역에서 거꾸로 탐색하여
  * 출발역에서 가장 늦게 출발할 수 있는 경로를 찾는다.
  *
+ * 시간은 모두 "service-day 기준 00:00부터의 분(int)"으로 표현한다.
+ * 25:30(다음날 01:30) 같은 ODPT 심야 표기도 그대로 1530분으로 보존되며,
+ * LocalTime의 mod-24h 한계 때문에 자정 경계에서 발생하던 비교 오류를 피한다.
+ *
  * 각 라운드(round)는 환승 1회를 의미:
- *   Round 0 = 직통
- *   Round 1 = 1회 환승
- *   Round 2 = 2회 환승
- *   Round 3 = 3회 환승
+ *   Round 0 = 직통, Round 1 = 1회 환승, ... , Round 3 = 3회 환승
  */
 @Component
 public class ReverseRaptorEngine {
 
     private static final Logger log = LoggerFactory.getLogger(ReverseRaptorEngine.class);
     private static final int MAX_ROUNDS = 4; // 0~3 = 최대 3회 환승
-    private static final LocalTime LAST_TRAIN_CUTOFF = LocalTime.of(1, 30); // 새벽 1:30 이후는 다음날
     private static final int TRANSFER_WALKING_MINUTES = 5; // 환승 도보 시간
+
+    /** 도착역의 초기 deadline. 어떤 도착 시각도 허용한다는 의미. */
+    private static final int NO_DEADLINE = Integer.MAX_VALUE / 2;
 
     private final TransitDataCache cache;
 
@@ -35,11 +36,6 @@ public class ReverseRaptorEngine {
         this.cache = cache;
     }
 
-    /**
-     * 출발역에서 도착역까지 가장 늦게 출발할 수 있는 경로를 찾는다.
-     *
-     * @return 찾은 경로 목록 (라운드별 최적 경로). 빈 리스트면 경로 없음.
-     */
     public List<Journey> findLastTrains(String fromStationId, String toStationId, String calendarId) {
         return findLastTrains(fromStationId, toStationId, Set.of(calendarId));
     }
@@ -47,14 +43,12 @@ public class ReverseRaptorEngine {
     public List<Journey> findLastTrains(String fromStationId, String toStationId, Set<String> calendarIds) {
         log.info("Finding last train: {} → {}, calendars={}", fromStationId, toStationId, calendarIds);
 
-        // latestDeparture[stationId] = 해당 역에서 도착역까지 갈 수 있는 가장 늦은 출발 시각
         Map<String, TimeAndJourney> bestByStation = new HashMap<>();
-        // 이번 라운드에서 개선된 역 목록
         Set<String> markedStations = new HashSet<>();
 
-        // 초기화: 도착역은 언제든 "도착 완료"
+        // 도착역은 도착 deadline 없음.
         bestByStation.put(toStationId, new TimeAndJourney(
-                LocalTime.of(23, 59),
+                NO_DEADLINE,
                 new Journey(toStationId, toStationId, List.of())
         ));
         markedStations.add(toStationId);
@@ -70,8 +64,6 @@ public class ReverseRaptorEngine {
             for (String targetStation : markedStations) {
                 TimeAndJourney targetBest = bestByStation.get(targetStation);
                 if (targetBest == null) continue;
-
-                // targetStation을 지나는 모든 열차 시간표를 찾아서 역방향 스캔
                 scanRoutesReverse(targetStation, targetBest, calendarIds, bestByStation, newMarked);
             }
 
@@ -83,12 +75,10 @@ public class ReverseRaptorEngine {
                     TimeAndJourney current = bestByStation.get(stationId);
                     if (current == null) continue;
 
-                    // 환승 도보 시간 감산
-                    LocalTime afterWalk = current.latestDeparture().minusMinutes(TRANSFER_WALKING_MINUTES);
+                    int afterWalk = current.latestDeparture() - TRANSFER_WALKING_MINUTES;
                     TimeAndJourney existing = bestByStation.get(transferStation);
 
-                    if (existing == null || afterWalk.isAfter(existing.latestDeparture())) {
-                        // 환승 leg 추가
+                    if (existing == null || afterWalk > existing.latestDeparture()) {
                         List<Leg> legs = new ArrayList<>(current.journey().legs());
                         legs.addFirst(new Leg(
                                 transferStation, stationId,
@@ -117,7 +107,6 @@ public class ReverseRaptorEngine {
             if (markedStations.isEmpty()) break;
         }
 
-        // 라운드별 중복 제거 후 출발 시간 내림차순 정렬
         return deduplicateAndSort(results);
     }
 
@@ -132,14 +121,12 @@ public class ReverseRaptorEngine {
             Map<String, TimeAndJourney> bestByStation,
             Set<String> newMarked
     ) {
-        // targetStation을 지나는 열차 시간표를 인덱스에서 조회 (풀스캔 회피)
         List<OdptTrainTimetable> timetables = cache.getTrainTimetablesForStation(targetStation, calendarIds);
 
         for (OdptTrainTimetable tt : timetables) {
             List<TrainStop> stops = tt.stops();
             if (stops == null || stops.isEmpty()) continue;
 
-            // targetStation이 이 열차의 몇 번째 정차역인지 찾기
             int targetIdx = -1;
             for (int i = 0; i < stops.size(); i++) {
                 if (targetStation.equals(stops.get(i).effectiveStation())) {
@@ -149,30 +136,26 @@ public class ReverseRaptorEngine {
             }
             if (targetIdx < 0) continue;
 
-            // targetStation 도착 시각
             String arrivalTimeStr = stops.get(targetIdx).effectiveTime();
             if (arrivalTimeStr == null) continue;
-            LocalTime arrivalAtTarget = parseTime(arrivalTimeStr);
+            int arrivalAtTarget = parseTime(arrivalTimeStr);
 
-            // 이 열차가 targetStation에 도착하는 시각이
-            // targetBest의 latestDeparture보다 늦으면 탑승 불가
-            if (arrivalAtTarget.isAfter(targetBest.latestDeparture())
-                    && !isAfterMidnight(arrivalAtTarget)) {
+            // 환승 deadline을 못 맞추면 탑승 불가.
+            // service-day 분 단위라 자정 경계에서도 단순 부등식이 정확하다.
+            if (arrivalAtTarget > targetBest.latestDeparture()) {
                 continue;
             }
 
-            // targetStation 이전의 모든 정차역에 대해 갱신
             for (int i = 0; i < targetIdx; i++) {
                 TrainStop stop = stops.get(i);
                 String stationId = stop.effectiveStation();
                 String depTimeStr = stop.effectiveTime();
                 if (stationId == null || depTimeStr == null) continue;
 
-                LocalTime depTime = parseTime(depTimeStr);
+                int depTime = parseTime(depTimeStr);
                 TimeAndJourney existing = bestByStation.get(stationId);
 
-                if (existing == null || depTime.isAfter(existing.latestDeparture())) {
-                    // 이 열차를 타면 더 늦게 출발 가능
+                if (existing == null || depTime > existing.latestDeparture()) {
                     Leg leg = new Leg(
                             stationId, targetStation,
                             tt.railway(), tt.railDirection(), tt.trainType(), tt.trainNumber(),
@@ -195,42 +178,31 @@ public class ReverseRaptorEngine {
         }
     }
 
-    private String findRailwayForStation(String stationId) {
-        var station = cache.getStation(stationId);
-        return station != null ? station.railway() : null;
-    }
-
-    private LocalTime parseTime(String timeStr) {
-        // "23:45" 또는 "00:15" 형식
+    /**
+     * "HH:mm" 또는 "HH:mm:ss" 표기를 00:00 기준 분(int)으로 변환.
+     * ODPT 심야 표기인 24+시간(예: "25:30")도 그대로 살린다.
+     */
+    private static int parseTime(String timeStr) {
         String[] parts = timeStr.split(":");
         int hour = Integer.parseInt(parts[0]);
         int minute = Integer.parseInt(parts[1]);
-        // 24시, 25시 등 심야 표기 처리
-        if (hour >= 24) {
-            hour -= 24;
-        }
-        return LocalTime.of(hour, minute);
-    }
-
-    private boolean isAfterMidnight(LocalTime time) {
-        return time.isBefore(LAST_TRAIN_CUTOFF);
+        return hour * 60 + minute;
     }
 
     private List<Journey> deduplicateAndSort(List<Journey> journeys) {
-        // 같은 leg 구성의 중복 제거
         Map<String, Journey> unique = new LinkedHashMap<>();
         for (Journey j : journeys) {
             String key = j.legs().stream()
                     .map(l -> l.railway() + "|" + l.fromStation() + "|" + l.toStation())
                     .reduce("", (a, b) -> a + ";" + b);
             Journey existing = unique.get(key);
-            if (existing == null || j.departureTime().isAfter(existing.departureTime())) {
+            if (existing == null || j.departureMinutes() > existing.departureMinutes()) {
                 unique.put(key, j);
             }
         }
 
         return unique.values().stream()
-                .sorted(Comparator.comparing(Journey::departureTime).reversed())
+                .sorted(Comparator.comparingInt(Journey::departureMinutes).reversed())
                 .toList();
     }
 
@@ -241,14 +213,14 @@ public class ReverseRaptorEngine {
             String toStation,
             List<Leg> legs
     ) {
-        public LocalTime departureTime() {
-            if (legs.isEmpty()) return LocalTime.MIN;
-            return legs.getFirst().departureTime();
+        public int departureMinutes() {
+            if (legs.isEmpty()) return 0;
+            return legs.getFirst().departureMinutes();
         }
 
-        public LocalTime arrivalTime() {
-            if (legs.isEmpty()) return LocalTime.MIN;
-            return legs.getLast().arrivalTime();
+        public int arrivalMinutes() {
+            if (legs.isEmpty()) return 0;
+            return legs.getLast().arrivalMinutes();
         }
 
         public int transferCount() {
@@ -263,15 +235,15 @@ public class ReverseRaptorEngine {
             String railDirection,
             String trainType,
             String trainNumber,
-            LocalTime departureTime,
-            LocalTime arrivalTime,
+            int departureMinutes,
+            int arrivalMinutes,
             String fromPlatform,
             String toPlatform
     ) {
         public Leg(String fromStation, String toStation, String railway, String railDirection,
-                   String trainType, String trainNumber, LocalTime departureTime, LocalTime arrivalTime) {
+                   String trainType, String trainNumber, int departureMinutes, int arrivalMinutes) {
             this(fromStation, toStation, railway, railDirection, trainType, trainNumber,
-                    departureTime, arrivalTime, null, null);
+                    departureMinutes, arrivalMinutes, null, null);
         }
 
         public boolean isTransfer() {
@@ -280,7 +252,7 @@ public class ReverseRaptorEngine {
     }
 
     record TimeAndJourney(
-            LocalTime latestDeparture,
+            int latestDeparture,
             Journey journey
     ) {}
 }
