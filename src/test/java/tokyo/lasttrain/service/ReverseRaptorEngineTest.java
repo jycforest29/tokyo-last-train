@@ -214,6 +214,57 @@ class ReverseRaptorEngineTest {
     }
 
     @Test
+    @DisplayName("자정 wrap '00:XX' 표기 열차도 올바른 service-day 분으로 처리된다")
+    void midnightWrapDoubleZeroNotation() throws Exception {
+        // 회귀 가드: TokyoMetro 등 일부 사업자는 자정 넘김을 "24:10" 대신 "00:10"으로 표기.
+        // 한 열차 안에서 stops가 단조 증가한다는 사실로 wrap을 감지해야 함.
+        // 감지 실패 시 도착이 minute=10으로 파싱돼 isWellOrderedJourney(arr>dep) 위반으로 거부.
+        TransitDataCache wrapCache = new TransitDataCache(null, null);
+        Map<String, OdptStation> stations = new ConcurrentHashMap<>();
+        stations.put(STATION_A, station(STATION_A, "A駅", "Station A", LINE_A));
+        stations.put(STATION_B_LINE_A, station(STATION_B_LINE_A, "B駅", "Station B", LINE_A));
+        stations.put(STATION_C, station(STATION_C, "C駅", "Station C", LINE_A));
+        setField(wrapCache, "stationsById", stations);
+
+        Map<String, OdptRailway> railways = new ConcurrentHashMap<>();
+        railways.put(LINE_A, railway(LINE_A, "テストA線", List.of(STATION_A, STATION_B_LINE_A, STATION_C)));
+        setField(wrapCache, "railwaysById", railways);
+
+        Map<String, OdptTrainTimetable> tts = new ConcurrentHashMap<>();
+        // A(23:50) → B(23:55) → C(00:10): "00:10"으로 자정 넘김 표기
+        tts.put("tt-wrap00", trainTimetable("tt-wrap00", LINE_A, WEEKDAY, "W01",
+                List.of(
+                        trainStop(STATION_A, "23:50", null),
+                        trainStop(STATION_B_LINE_A, "23:55", "23:55"),
+                        trainStop(null, null, "00:10", STATION_C)
+                )));
+        setField(wrapCache, "trainTimetables", tts);
+
+        Map<String, List<String>> idx = new ConcurrentHashMap<>();
+        for (var s : tts.get("tt-wrap00").stops()) {
+            String sid = s.effectiveStation();
+            if (sid != null) idx.computeIfAbsent(sid, k -> new ArrayList<>()).add("tt-wrap00");
+        }
+        setField(wrapCache, "stationToTrainTimetables", idx);
+        setField(wrapCache, "transferGraph", new ConcurrentHashMap<>());
+        setField(wrapCache, "stationTimetables", new ConcurrentHashMap<>());
+        setField(wrapCache, "fares", new ConcurrentHashMap<>());
+        setField(wrapCache, "nameIndex", new ConcurrentHashMap<>());
+        setField(wrapCache, "trainTypesById", new ConcurrentHashMap<>());
+        setField(wrapCache, "calendarsById", new ConcurrentHashMap<>());
+        setField(wrapCache, "railwayStationOrder", new ConcurrentHashMap<>());
+
+        ReverseRaptorEngine wrapEngine = new ReverseRaptorEngine(wrapCache);
+        List<Journey> journeys = wrapEngine.findLastTrains(STATION_A, STATION_C, WEEKDAY);
+
+        assertFalse(journeys.isEmpty(), "자정 wrap 열차도 발견되어야 한다");
+        Journey j = journeys.getFirst();
+        assertEquals(23 * 60 + 50, j.departureMinutes(), "출발 23:50");
+        assertEquals(24 * 60 + 10, j.arrivalMinutes(), "도착은 1450분 (24:10), 10분이 아니다");
+        assertTrue(j.arrivalMinutes() > j.departureMinutes(), "arr > dep");
+    }
+
+    @Test
     @DisplayName("결과가 출발 시간 내림차순으로 정렬된다")
     void resultsSortedByDepartureDesc() {
         List<Journey> journeys = engine.findLastTrains(STATION_A, STATION_C, WEEKDAY);

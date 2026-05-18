@@ -136,9 +136,9 @@ public class ReverseRaptorEngine {
             }
             if (targetIdx < 0) continue;
 
-            String arrivalTimeStr = stops.get(targetIdx).effectiveTime();
-            if (arrivalTimeStr == null) continue;
-            int arrivalAtTarget = parseTime(arrivalTimeStr);
+            int[] stopTimes = parseStopTimesWithMidnightWrap(stops);
+            int arrivalAtTarget = stopTimes[targetIdx];
+            if (arrivalAtTarget < 0) continue;
 
             // 환승 deadline을 못 맞추면 탑승 불가.
             // service-day 분 단위라 자정 경계에서도 단순 부등식이 정확하다.
@@ -149,10 +149,9 @@ public class ReverseRaptorEngine {
             for (int i = 0; i < targetIdx; i++) {
                 TrainStop stop = stops.get(i);
                 String stationId = stop.effectiveStation();
-                String depTimeStr = stop.effectiveTime();
-                if (stationId == null || depTimeStr == null) continue;
+                int depTime = stopTimes[i];
+                if (stationId == null || depTime < 0) continue;
 
-                int depTime = parseTime(depTimeStr);
                 TimeAndJourney existing = bestByStation.get(stationId);
 
                 if (existing == null || depTime > existing.latestDeparture()) {
@@ -187,6 +186,36 @@ public class ReverseRaptorEngine {
         int hour = Integer.parseInt(parts[0]);
         int minute = Integer.parseInt(parts[1]);
         return hour * 60 + minute;
+    }
+
+    /**
+     * 한 열차의 모든 정차역 시각을 service-day 분(int) 배열로 파싱한다.
+     * 한 열차 안에서 시각은 단조 증가한다는 사실을 이용해 자정 wrap을 감지:
+     * 다음 시각이 이전보다 작으면 24시간(1440분)을 더한다. (TokyoMetro는 자정 넘김을
+     * "24:28"이 아닌 "00:28"로 표기하는 경우가 있어, 이 보정이 없으면 도착이 출발보다
+     * 빨라 보여 "잘못된 journey"로 거부됨.)
+     * null effectiveTime은 -1로 둔다.
+     */
+    private static int[] parseStopTimesWithMidnightWrap(List<TrainStop> stops) {
+        int[] times = new int[stops.size()];
+        int dayOffset = 0;
+        int prevAdjusted = -1;
+        for (int i = 0; i < stops.size(); i++) {
+            String t = stops.get(i).effectiveTime();
+            if (t == null) {
+                times[i] = -1;
+                continue;
+            }
+            int raw = parseTime(t);
+            int adjusted = raw + dayOffset;
+            if (prevAdjusted >= 0 && adjusted < prevAdjusted) {
+                dayOffset += 24 * 60;
+                adjusted = raw + dayOffset;
+            }
+            times[i] = adjusted;
+            prevAdjusted = adjusted;
+        }
+        return times;
     }
 
     private List<Journey> deduplicateAndSort(List<Journey> journeys) {
